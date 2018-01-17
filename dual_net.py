@@ -19,7 +19,7 @@ import symmetries
 import go
 
 EXAMPLES_PER_GENERATION = 2000000
-TRAIN_BATCH_SIZE = 16
+TRAIN_BATCH_SIZE = 32
 # Momentum comes from the AGZ paper. Set at 0.9.
 MOMENTUM = 0.9
 
