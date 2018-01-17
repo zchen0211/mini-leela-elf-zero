@@ -174,7 +174,7 @@ def get_default_hyperparams(**overrides):
         'k': k,  # Width of each conv layer
         'fc_width': 2 * k,  # Width of each fully connected layer
         'num_shared_layers': go.N,  # Number of shared trunk layers
-        'l2_strength': 2e-4,  # Regularization strength
+        'l2_strength': 2e-5,  # Regularization strength
         'momentum': 0.9,  # Momentum used in SGD
     }
     hparams.update(**overrides)
@@ -247,7 +247,7 @@ def train_ops(input_tensors, output_tensors, **hparams):
             labels=input_tensors['pi_tensor']))
     value_cost = tf.reduce_mean(tf.square(
         output_tensors['value_output'] - input_tensors['value_tensor']))
-    l2_cost = 1e-4 * tf.add_n([tf.nn.l2_loss(v)
+    l2_cost = hparams['l2_strength'] * tf.add_n([tf.nn.l2_loss(v)
         for v in tf.trainable_variables() if not 'bias' in v.name])
     combined_cost = policy_cost + value_cost + l2_cost
     learning_rate = tf.train.exponential_decay(1e-2, global_step, 10 ** 7, 0.1)
