@@ -101,16 +101,16 @@ def read_tf_records(batch_size, tf_records, num_repeats=None,
     # and the examples being read from the files.
     record_list = tf.data.Dataset.from_tensor_slices(tf_records)
     if shuffle_records:
-        record_list = record_list.shuffle(buffer_size=1000)
+        record_list = record_list.shuffle(buffer_size=10000)
     dataset = record_list.interleave(lambda x:
             tf.data.TFRecordDataset(x, compression_type='ZLIB'),
-            cycle_length=8, block_length=16)
+            cycle_length=64, block_length=16)
     if num_repeats is not None:
         dataset = dataset.repeat(num_repeats)
     else:
         dataset = dataset.repeat()
     if shuffle_examples:
-        dataset = dataset.shuffle(buffer_size=10000)
+        dataset = dataset.shuffle(buffer_size=100000)
     dataset = dataset.batch(batch_size)
     return dataset
 
