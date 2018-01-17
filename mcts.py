@@ -140,10 +140,10 @@ class MCTSNode(object):
         dirch = np.random.dirichlet([D_NOISE_ALPHA()] * ((go.N * go.N) + 1))
         self.child_prior = self.child_prior * 0.75 + dirch * 0.25
 
-    def children_as_pi(self, stretch=False):
+    def children_as_pi(self, squash=False):
         probs = self.child_N
-        if stretch:
-            probs = probs ** 8
+        if squash:
+            probs = probs ** .95
         return probs / np.sum(probs)
 
     def most_visited_path(self):
