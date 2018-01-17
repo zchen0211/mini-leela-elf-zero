@@ -141,6 +141,11 @@ class MCTSNode(object):
         self.child_prior = self.child_prior * 0.75 + dirch * 0.25
 
     def children_as_pi(self, squash=False):
+        """Returns the child visit counts as a probability distribution, pi.
+        If squash is True, exponentiate the probabilities by a temperature
+        slightly larger than unity, which encourages diversity in early positions
+        (Anything to stop playing 3-3!)
+        """
         probs = self.child_N
         if squash:
             probs = probs ** .95
