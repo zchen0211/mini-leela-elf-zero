@@ -55,10 +55,12 @@ def selfplay(readouts=1600, games=8, verbose=2, resign_threshold=0.99):
     _, model_name = get_latest_model()
     print("Playing a game with model {}".format(model_name))
     model_save_file = os.path.join(MODELS_DIR, model_name)
+    game_output_dir = os.path.join(SELFPLAY_DIR, model_name)
+    sgf_output_dir = os.path.join(SGF_DIR, model_name)
     main.selfplay(
         load_file=model_save_file,
-        output_dir=os.path.join(SELFPLAY_DIR, model_name),
-        output_sgf=SGF_DIR,
+        output_dir=game_output_dir,
+        output_sgf=sgf_output_dir,
         readouts=readouts,
         games=games,
         verbose=verbose,
