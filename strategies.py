@@ -116,7 +116,7 @@ class MCTSPlayerMixin:
         '''
         if not self.two_player_mode:
             self.searches_pi.append(
-                self.root.children_as_pi(self.root.position.n > self.temp_threshold))
+                self.root.children_as_pi(self.root.position.n < self.temp_threshold))
         self.qs.append(self.root.Q) # Save our resulting Q.
         self.comments.append(self.root.describe())
         self.root = self.root.add_child(coords.flatten_coords(c))
