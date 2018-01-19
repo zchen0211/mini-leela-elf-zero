@@ -3,7 +3,7 @@ kind: Job
 metadata:
   name: minigo-gpu-player
 spec:
-  parallelism: 11
+  parallelism: 1355
   completions: 200000
   template:
     metadata:
