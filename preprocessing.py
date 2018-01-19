@@ -110,7 +110,7 @@ def read_tf_records(batch_size, tf_records, num_repeats=None,
     else:
         dataset = dataset.repeat()
     if shuffle_examples:
-        dataset = dataset.shuffle(buffer_size=100000)
+        dataset = dataset.shuffle(buffer_size=4000000)
     dataset = dataset.batch(batch_size)
     return dataset
 

@@ -131,7 +131,7 @@ def selfplay(
 def gather(
         input_directory: 'where to look for games'='data/selfplay/',
         output_directory: 'where to put collected games'='data/training_chunks/',
-        examples_per_record: 'how many tf.examples to gather in each chunk'=20000):
+        examples_per_record: 'how many tf.examples to gather in each chunk'=10000):
     _ensure_dir_exists(output_directory)
     models = [model_dir.strip('/') for model_dir in gfile.ListDirectory(input_directory)]
     with timer("Finding existing tfrecords..."):

@@ -51,7 +51,7 @@ def bootstrap():
     print("Bootstrapping model at {}".format(bootstrap_model_path))
     main.bootstrap(bootstrap_model_path, n=N)
 
-def selfplay(readouts=1600, games=8, verbose=2, resign_threshold=0.99):
+def selfplay(readouts=800, games=8, verbose=2, resign_threshold=0.99):
     _, model_name = get_latest_model()
     print("Playing a game with model {}".format(model_name))
     model_save_file = os.path.join(MODELS_DIR, model_name)

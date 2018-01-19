@@ -21,7 +21,7 @@ def play(network, games, readouts, resign_threshold, verbosity=0):
     # Disable resign in 5% of games
     if random.random() < 0.05:
       for player in players:
-          player.resign_threshold = -0.9999
+          player.resign_threshold = -0.999999
 
     for player in players:
         player.initialize_game()
