@@ -23,6 +23,7 @@ TRAIN_BATCH_SIZE = 32
 # Momentum comes from the AGZ paper. Set at 0.9.
 MOMENTUM = 0.9
 
+
 class DualNetworkTrainer():
     def __init__(self, save_file=None, **hparams):
         self.hparams = get_default_hyperparams(**hparams)
@@ -41,6 +42,7 @@ class DualNetworkTrainer():
         model exists, but you accidentally init from an older model checkpoint
         and then overwrite the newer model weights.
         """
+        tf.logging.set_verbosity(tf.logging.WARN)
         if self.save_file is not None and os.path.exists(self.save_file + '.meta'):
             tf.train.Saver().restore(self.sess, self.save_file)
             return
@@ -50,6 +52,7 @@ class DualNetworkTrainer():
         else:
             print("Bootstrapping with random weights", file=sys.stderr)
             self.sess.run(tf.global_variables_initializer())
+        tf.logging.set_verbosity(tf.logging.INFO)
 
     def save_weights(self):
         with self.sess.graph.as_default():
