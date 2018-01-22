@@ -78,8 +78,12 @@ def train(logdir=None):
     print("New model will be {}".format(new_model_name))
     load_file = os.path.join(MODELS_DIR, model_name)
     save_file = os.path.join(MODELS_DIR, new_model_name)
-    main.train(TRAINING_CHUNK_DIR, save_file=save_file, load_file=load_file,
+    try:
+        main.train(TRAINING_CHUNK_DIR, save_file=save_file, load_file=load_file,
                generation_num=model_num, logdir=logdir, n=N)
+    except tf.errors.DataLossError as err:
+        print("got a TF DataLossError!  Muddling on regardless")
+        logging.exception("TF Dataloss Error")
 
 def loop(logdir=None):
     while True:
