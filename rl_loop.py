@@ -5,6 +5,7 @@ import cloud_logging
 import os
 import main
 import shipname
+import sys
 from utils import timer
 from tensorflow import gfile
 
@@ -81,14 +82,25 @@ def train(logdir=None):
     try:
         main.train(TRAINING_CHUNK_DIR, save_file=save_file, load_file=load_file,
                generation_num=model_num, logdir=logdir, n=N)
-    except tf.errors.DataLossError as err:
-        print("got a TF DataLossError!  Muddling on regardless")
-        logging.exception("TF Dataloss Error")
+    except:
+        print("got an error!  Muddling on regardless")
+        logging.exception("Train error")
 
 def loop(logdir=None):
+    gather_errors = 0
     while True:
         with timer("Gather"):
-            gather()
+            try:
+                gather()
+            except:
+                gather_errors += 1
+                logging.exception("Error in gather, retrying")
+                if gather_errors == 3:
+                    print("Gathering died too many times!")
+                    sys.exit(1)
+                continue
+        gather_errors = 0
+
         with timer("Train"):
             train(logdir)
 
