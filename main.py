@@ -133,7 +133,7 @@ def gather(
         output_directory: 'where to put collected games'='data/training_chunks/',
         examples_per_record: 'how many tf.examples to gather in each chunk'=10000):
     _ensure_dir_exists(output_directory)
-    models = [model_dir.strip('/') for model_dir in gfile.ListDirectory(input_directory)]
+    models = [model_dir.strip('/') for model_dir in gfile.ListDirectory(input_directory)][-50:]
     with timer("Finding existing tfrecords..."):
         model_gamedata = {
             model: gfile.Glob(
@@ -154,16 +154,15 @@ def gather(
     num_already_processed = len(already_processed)
 
     for model_name, record_files in sorted(model_gamedata.items()):
-        with timer("Processing %s" % model_name):
-            if set(record_files) <= already_processed:
-                print("%s is already fully processed" % model_name)
-                continue
-            for i, example_batch in enumerate(
-                    tqdm(preprocessing.shuffle_tf_examples(examples_per_record, record_files))):
-                output_record = os.path.join(output_directory,
-                    '{}-{}.tfrecord.zz'.format(model_name, str(i)))
-                preprocessing.write_tf_examples(output_record, example_batch, serialize=False)
-            already_processed.update(record_files)
+        if set(record_files) <= already_processed:
+            print("%s is already fully processed" % model_name)
+            continue
+        for i, example_batch in enumerate(
+                tqdm(preprocessing.shuffle_tf_examples(examples_per_record, record_files))):
+            output_record = os.path.join(output_directory,
+                '{}-{}.tfrecord.zz'.format(model_name, str(i)))
+            preprocessing.write_tf_examples(output_record, example_batch, serialize=False)
+        already_processed.update(record_files)
 
     print("Processed %s new files" % (len(already_processed) - num_already_processed))
     with gfile.GFile(meta_file, 'w') as f:
