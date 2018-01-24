@@ -16,6 +16,7 @@ def generate(model_num):
         new_name = 'bootstrap'
     elif go.N == 19:
         new_name = random.choice(names)
+        assert new_name != ""
     else:
         new_name = petname.generate()
     full_name = "%06d-%s" % (model_num, new_name)

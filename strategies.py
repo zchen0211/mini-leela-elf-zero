@@ -110,7 +110,7 @@ class MCTSPlayerMixin:
         '''
         Notable side effects:
           - finalizes the probability distribution according to
-          this roots visit counts into the class' running tally, `searches`
+          this roots visit counts into the class' running tally, `searches_pi`
           - Makes the node associated with this move the root, for future
             `inject_noise` calls.
         '''
