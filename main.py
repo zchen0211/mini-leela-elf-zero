@@ -61,9 +61,9 @@ def bootstrap(save_file, n=19):
 def train(chunk_dir, save_file, load_file=None, generation_num=0,
           logdir=None, n=19, num_steps=None):
     go.set_board_size(int(n))
-    tf_records = gfile.Glob(os.path.join(chunk_dir, '*.tfrecord.zz'))
-    tf_records = [f for f in tf_records
-        if (generation_num - 50) < int(os.path.basename(f)[:6]) <= generation_num]
+    tf_records = sorted(gfile.Glob(os.path.join(chunk_dir, '*.tfrecord.zz')))
+    tf_records = tf_records[-12500:]
+    print("Training from:", tf_records[0], " to ", tf_records[-1])
 
     n = dual_net.DualNetworkTrainer(save_file)
     with timer("Training"):

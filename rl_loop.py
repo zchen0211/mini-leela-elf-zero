@@ -46,6 +46,13 @@ def get_latest_model():
     latest_model = sorted(model_numbers_names, reverse=True)[0]
     return latest_model
 
+def game_counts(n=20):
+    all_models = gfile.Glob(os.path.join(MODELS_DIR, '*.meta'))
+    model_filenames = sorted([os.path.basename(m).split('.')[0] for m in all_models], reverse=True)
+    for m in model_filenames[:n]:
+        games = gfile.Glob(os.path.join(SELFPLAY_DIR, m, '*.zz'))
+        print(m, len(games) * 8)
+
 def bootstrap():
     bootstrap_name = shipname.generate(0)
     bootstrap_model_path = os.path.join(MODELS_DIR, bootstrap_name)
@@ -105,7 +112,7 @@ def loop(logdir=None):
             train(logdir)
 
 parser = argparse.ArgumentParser()
-argh.add_commands(parser, [train, selfplay, gather, bootstrap, loop])
+argh.add_commands(parser, [train, selfplay, gather, bootstrap, loop, game_counts])
 
 if __name__ == '__main__':
     print_flags()
