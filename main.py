@@ -155,8 +155,8 @@ def gather(
 
     for model_name, record_files in sorted(model_gamedata.items()):
         if set(record_files) <= already_processed:
-            print("%s is already fully processed" % model_name)
             continue
+        print("Gathering files for %s:" % model_name)
         for i, example_batch in enumerate(
                 tqdm(preprocessing.shuffle_tf_examples(examples_per_record, record_files))):
             output_record = os.path.join(output_directory,

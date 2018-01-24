@@ -2,6 +2,7 @@
 import argh
 import argparse
 import cloud_logging
+import logging
 import os
 import main
 import shipname
@@ -96,6 +97,7 @@ def train(logdir=None):
 def loop(logdir=None):
     gather_errors = 0
     while True:
+        print("==================================")
         with timer("Gather"):
             try:
                 gather()
