@@ -94,27 +94,8 @@ def train(logdir=None):
         print("got an error!  Muddling on regardless")
         logging.exception("Train error")
 
-def loop(logdir=None):
-    gather_errors = 0
-    while True:
-        print("==================================")
-        with timer("Gather"):
-            try:
-                gather()
-            except:
-                gather_errors += 1
-                logging.exception("Error in gather, retrying")
-                if gather_errors == 3:
-                    print("Gathering died too many times!")
-                    sys.exit(1)
-                continue
-        gather_errors = 0
-
-        with timer("Train"):
-            train(logdir)
-
 parser = argparse.ArgumentParser()
-argh.add_commands(parser, [train, selfplay, gather, bootstrap, loop, game_counts])
+argh.add_commands(parser, [train, selfplay, gather, bootstrap, game_counts])
 
 if __name__ == '__main__':
     print_flags()
