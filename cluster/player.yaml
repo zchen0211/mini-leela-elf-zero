@@ -21,7 +21,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: player
-        image: gcr.io/$PROJECT/minigo-player:0.3
+        image: gcr.io/$PROJECT/minigo-player:0.10
         imagePullPolicy: Always
         volumeMounts:
         - name: service-credentials
@@ -33,8 +33,6 @@ spec:
           value: $BUCKET_NAME
         - name: BOARD_SIZE
           value: "$BOARD_SIZE"
-        - name: GAMES
-          value: "8"
         securityContext:
           privileged: true
       volumes:

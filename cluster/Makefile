@@ -1,6 +1,11 @@
 VERSION=0.11
-PROJECT=tensor-go
+PROJECT?=minigo-pub
+# Version and project can be overridden with the following:
+#  make target VERSION=0.XY PROJECT=foo-project
 
+make echo:
+		echo $(VERSION)
+		echo $(PROJECT)
 
 make gpu-image:
 		mkdir -p staging/data

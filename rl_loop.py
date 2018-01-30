@@ -1,4 +1,18 @@
-"""Wrapper script to ensure that main.py commands are called correctly."""
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Wrapper scripts to ensure that main.py commands are called correctly."""
 import argh
 import argparse
 import cloud_logging
@@ -12,7 +26,6 @@ from tensorflow import gfile
 
 # Pull in environment variables. Run `source ./cluster/common` to set these.
 BUCKET_NAME = os.environ['BUCKET_NAME']
-N = os.environ['BOARD_SIZE']
 
 BASE_DIR = "gs://{}".format(BUCKET_NAME)
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
@@ -24,7 +37,6 @@ TRAINING_CHUNK_DIR = os.path.join(BASE_DIR, 'data', 'training_chunks')
 def print_flags():
     flags = {
         'BUCKET_NAME': BUCKET_NAME,
-        'N': N,
         'BASE_DIR': BASE_DIR,
         'MODELS_DIR': MODELS_DIR,
         'SELFPLAY_DIR': SELFPLAY_DIR,
@@ -58,7 +70,7 @@ def bootstrap():
     bootstrap_name = shipname.generate(0)
     bootstrap_model_path = os.path.join(MODELS_DIR, bootstrap_name)
     print("Bootstrapping model at {}".format(bootstrap_model_path))
-    main.bootstrap(bootstrap_model_path, n=N)
+    main.bootstrap(bootstrap_model_path)
 
 def selfplay(readouts=800, verbose=2, resign_threshold=0.99):
     _, model_name = get_latest_model()
@@ -72,7 +84,6 @@ def selfplay(readouts=800, verbose=2, resign_threshold=0.99):
         output_sgf=sgf_output_dir,
         readouts=readouts,
         verbose=verbose,
-        n=N,
     )
 
 def gather():

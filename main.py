@@ -1,3 +1,17 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import argparse
 import argh
 import os.path
@@ -33,8 +47,7 @@ def _ensure_dir_exists(directory):
 def gtp(load_file: "The path to the network model files"=None,
         readouts: 'How many simulations to run per move'=100,
         cgos_mode: 'Whether to use CGOS time constraints'=False,
-        verbose=1, n=19):
-    go.set_board_size(int(n))
+        verbose=1):
     engine = make_gtp_instance(load_file,
                                readouts_per_move=readouts,
                                verbosity=verbose,
@@ -54,13 +67,12 @@ def gtp(load_file: "The path to the network model files"=None,
             sys.stdout.write(engine_reply)
             sys.stdout.flush()
 
-def bootstrap(save_file, n=19):
-    go.set_board_size(int(n))
+def bootstrap(save_file):
     dual_net.DualNetworkTrainer(save_file).bootstrap()
 
 def train(chunk_dir, save_file, load_file=None, generation_num=0,
-          logdir=None, n=19, num_steps=None):
-    go.set_board_size(int(n))
+          logdir=None, num_steps=None):
+
     tf_records = sorted(gfile.Glob(os.path.join(chunk_dir, '*.tfrecord.zz')))
     tf_records = tf_records[-12500:]
     print("Training from:", tf_records[0], " to ", tf_records[-1])
@@ -75,9 +87,7 @@ def evaluate(
         output_dir: 'Where to write the evaluation results'='data/evaluate/sgf',
         readouts: 'How many readouts to make per move.'=400,
         games: 'the number of games to play'=16,
-        verbose: 'How verbose the players should be (see selfplay)' = 1,
-        n=19):
-    go.set_board_size(int(n))
+        verbose: 'How verbose the players should be (see selfplay)' = 1):
 
     black_model = os.path.abspath(black_model)
     white_model = os.path.abspath(white_model)
@@ -103,9 +113,7 @@ def selfplay(
          output_sgf: "Where to write the sgfs"="sgf/",
          readouts: 'How many simulations to run per move'=100,
          verbose : '>=2 will print debug info, >=3 will print boards' = 1,
-         resign_threshold : 'absolute value of threshold to resign at' = 0.95,
-         n=19):
-    go.set_board_size(int(n))
+         resign_threshold : 'absolute value of threshold to resign at' = 0.95):
     _ensure_dir_exists(output_sgf)
     _ensure_dir_exists(output_dir)
 
@@ -164,16 +172,8 @@ def gather(
     with gfile.GFile(meta_file, 'w') as f:
         f.write('\n'.join(sorted(already_processed)))
 
-def convert(file):
-    assert file.endswith('.gz')
-    outfile = file.replace('.gz', '.tfrecord.zz')
-    try:
-        preprocessing.make_dataset_from_DSv2(file, outfile)
-    except:
-        print("error for ",file)
-
 parser = argparse.ArgumentParser()
-argh.add_commands(parser, [gtp, bootstrap, train, selfplay, gather, evaluate, convert])
+argh.add_commands(parser, [gtp, bootstrap, train, selfplay, gather, evaluate])
 
 if __name__ == '__main__':
     cloud_logging.configure()

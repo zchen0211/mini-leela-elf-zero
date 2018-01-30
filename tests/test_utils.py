@@ -1,3 +1,17 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import numpy as np
 import random
 import re
@@ -7,7 +21,7 @@ import unittest
 import go
 import utils
 
-go.set_board_size(9)
+assert go.N == 9, "All unit tests must be run with BOARD_SIZE=9"
 
 def load_board(string):
     reverse_map = {
@@ -41,8 +55,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(utils.parse_game_result('Void'), 0)
 
 
-
-class GoPositionTestCase(unittest.TestCase):
+class MiniGoUnitTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.start_time = time.time()
@@ -50,9 +63,6 @@ class GoPositionTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         print("\n%s.%s: %.3f seconds" % (cls.__module__, cls.__name__, time.time() - cls.start_time))
-
-    def setUp(self):
-        go.set_board_size(9)
 
     def assertEqualNPArray(self, array1, array2):
         if not np.all(array1 == array2):
@@ -101,7 +111,6 @@ class GoPositionTestCase(unittest.TestCase):
             self.assertEqual(pos1.recent[-r_len:], pos2.recent[-r_len:])
         self.assertEqual(pos1.to_play, pos2.to_play)
 
-class MCTSTestMixin():
     def assertNoPendingVirtualLosses(self, root):
         """Raise an error if any node in this subtree has vlosses pending."""
         queue = [root]

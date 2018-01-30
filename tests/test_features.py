@@ -1,13 +1,26 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import itertools
 import numpy as np
 
 import features
 import go
-from test_utils import load_board, GoPositionTestCase
+from tests import test_utils
 
-go.set_board_size(9)
 EMPTY_ROW = '.' * go.N + '\n'
-TEST_BOARD = load_board('''
+TEST_BOARD = test_utils.load_board('''
 .X.....OO
 X........
 XXXXXXXXX
@@ -25,7 +38,7 @@ TEST_POSITION = go.Position(
     to_play=go.BLACK,
 )
 
-TEST_BOARD2 = load_board('''
+TEST_BOARD2 = test_utils.load_board('''
 .XOXXOO..
 XO.OXOX..
 XXO..X...
@@ -50,32 +63,32 @@ for coord in ((0, 0), (0, 1), (0, 2), (0, 3), (1, 1)):
 # .X.......
 # .........
 
-class TestFeatureExtraction(GoPositionTestCase):
+class TestFeatureExtraction(test_utils.MiniGoUnitTest):
     def test_stone_features(self):
         f = features.stone_features(TEST_POSITION3)
         self.assertEqual(TEST_POSITION3.to_play, go.WHITE)
         self.assertEqual(f.shape, (9, 9, 16))
-        self.assertEqualNPArray(f[:, :, 0], load_board('''
+        self.assertEqualNPArray(f[:, :, 0], test_utils.load_board('''
             ...X.....
             .........''' + EMPTY_ROW * 7))
 
-        self.assertEqualNPArray(f[:, :, 1], load_board('''
+        self.assertEqualNPArray(f[:, :, 1], test_utils.load_board('''
             X.X......
             .X.......''' + EMPTY_ROW * 7))
 
-        self.assertEqualNPArray(f[:, :, 2], load_board('''
+        self.assertEqualNPArray(f[:, :, 2], test_utils.load_board('''
             .X.X.....
             .........''' + EMPTY_ROW * 7))
 
-        self.assertEqualNPArray(f[:, :, 3], load_board('''
+        self.assertEqualNPArray(f[:, :, 3], test_utils.load_board('''
             X.X......
             .........''' + EMPTY_ROW * 7))
 
-        self.assertEqualNPArray(f[:, :, 4], load_board('''
+        self.assertEqualNPArray(f[:, :, 4], test_utils.load_board('''
             .X.......
             .........''' + EMPTY_ROW * 7))
 
-        self.assertEqualNPArray(f[:, :, 5], load_board('''
+        self.assertEqualNPArray(f[:, :, 5], test_utils.load_board('''
             X.X......
             .........''' + EMPTY_ROW * 7))
 

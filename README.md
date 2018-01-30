@@ -2,8 +2,15 @@ Minigo: A minimalist Go engine modeled after AlphaGo Zero, built on MuGo
 ==================================================
 
 This is a pure Python implementation of a neural-network based Go AI, using
-TensorFlow. While inspired by Deepmind's AlphaGo algorithm, this project is not
-a Deepmind project.
+TensorFlow. While inspired by DeepMind's AlphaGo algorithm, this project is not
+a DeepMind project nor is it affiliated with the official AlphaGo project.
+
+### This is NOT an official version of AlphaGo ###
+
+Repeat, *this is not the official AlphaGo program by DeepMind*.  This is an
+independent effort by Go enthusiasts to replicate the results of the AlphaGo
+Zero paper ("Mastering the Game of Go without Human Knowledge," *Nature*), with
+some resources generously made available by Google.
 
 Minigo is based off of Brian Lee's "MuGo" -- a pure Python implementation of the
 first AlphaGo paper ["Mastering the Game of Go with Deep Neural Networks and
@@ -25,7 +32,7 @@ Goals of the Project
    Google Cloud Platform for establishing Reinforcement Learning pipelines on
    various hardware accelerators.
 
-2. Reproduce the methods of the original Deepmind AlphaGo papers as faithfully
+2. Reproduce the methods of the original DeepMind AlphaGo papers as faithfully
    as possible, through an open-source implementation and open-source pipeline
    tools.
 
@@ -37,13 +44,25 @@ establishes itself as the top Go AI. Instead, we strive for a readable,
 understandable implementation that can benefit the community, even if that
 means our implementation is not as fast or efficient as possible.
 
+While this product might produce such a strong model, we hope to focus on the
+process.  Remember, getting there is half the fun. :)
+
+We hope this project is an accessible way for interested developers to have
+access to a strong Go model with an easy-to-understand platform of python code
+available for extension, adaptation, etc.
+
+If you'd like to read about our experiences training models, see [RESULTS.md](RESULTS.md).
+
+To see our guidelines for contributing, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 Getting Started
 ===============
 
-This project assumes you're using:
+This project assumes you have the following:
 
 - virtualenv / virtualenvwrapper
-- Python 3.6+
+- Python 3.5+
+- [Docker](https://docs.docker.com/install/)
 
 The [Hitchhiker's guide to
 python](http://docs.python-guide.org/en/latest/dev/virtualenvs/) has a good
@@ -64,8 +83,8 @@ the dependencies:
 pip3 install -r requirements.txt
 ```
 
-If you wish to run on GPU you must install CUDA 8.0 or later (see TensorFlow
-documentation).
+The `requirements.txt` file assumes you'll use a GPU; if you wish to run on GPU
+you must install CUDA 8.0 or later (see TensorFlow documentation).
 
 If you don't want to run on GPU or don't have one, you can downgrade:
 
@@ -81,10 +100,27 @@ pip3 install -r requirements-cpu.txt
 ```
 
 
+Setting up the Environment
+--------------------------
+
+You may want to use a cloud project for resources. If so set:
+
+```shell
+PROJECT=foo-project
+```
+
+Then, running
+
+```shell
+source cluster/common.sh
+```
+
+will set up other environment variables defaults.
+
 Running unit tests
 ------------------
 ```
-python3 -m unittest discover tests
+BOARD_SIZE=9 python3 -m unittest discover tests
 ```
 
 
@@ -95,24 +131,31 @@ All commands are compatible with either Google Cloud Storage as a remote file
 system, or your local file system. The examples here use GCS, but local file
 paths will work just as well.
 
-To use GCS, set the BUCKET_NAME variable and authenticate. Otherwise, all
-commands fetching files from GCS will hang.
+To use GCS, set the `BUCKET_NAME` variable and authenticate via `gcloud login`.
+Otherwise, all commands fetching files from GCS will hang.
 
+For instance, this would set a bucket, authenticate, and then look for the most
+recent model.
 ```bash
-export BUCKET_NAME=foobar;
+export BUCKET_NAME=your_bucket;
 gcloud auth application-default login
 gsutil ls gs://minigo/models | tail -3
 ```
 
-Which might look like
+Which might look like:
 
 ```
-gs://minigo/models/000193-trusty.data-00000-of-00001
-gs://minigo/models/000193-trusty.index
-gs://minigo/models/000193-trusty.meta
+gs://$BUCKET_NAME/models/000193-trusty.data-00000-of-00001
+gs://$BUCKET_NAME/models/000193-trusty.index
+gs://$BUCKET_NAME/models/000193-trusty.meta
 ```
 
-You'll need to copy them to your local disk:
+These three files comprise the model, and commands that take a model as an
+argument usually need the path to the model basename, e.g.
+`gs://$BUCKET_NAME/models/000193-trusty`
+
+You'll need to copy them to your local disk.  This fragment copies the latest
+model to the directory specified by `MINIGO_MODELS`
 
 ```shell
 MINIGO_MODELS=$HOME/minigo-models
@@ -122,23 +165,27 @@ gsutil ls gs://minigo/models | tail -3 | xargs -I{} gsutil cp "{}" $MINIGO_MODEL
 
 Selfplay
 --------
-
-To watch Minigo play itself:
+To watch Minigo play a game, you need to specify a model. Here's an example
+to play using the latest model in your bucket
 
 ```shell
-python main.py selfplay --readouts $READOUTS -g 1 -v 2
+python rl_loop.py selfplay --readouts=$READOUTS -v 2
 ```
-
-where `READOUTS` is how many searches to make per move, and (-g 1) is how
-many games to play simultaneously.  Timing information and statistics will be
-printed at each move.  Setting verbosity (-v) to 3 or higher will print a board at each move.
+where `READOUTS` is how many searches to make per move.  Timing information and
+statistics will be printed at each move.  Setting verbosity (-v) to 3 or higher
+will print a board at each move.
 
 Playing Against Minigo
 ----------------------
 
-Minigo uses the GTP protocol, and you can use any gtp-compliant program with it.
+Minigo uses the
+[http://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2/gtp2-spec.html](GTP
+protocol), and you can use any gtp-compliant program with it.
+
 ```
-python3 main.py gtp gs://$BUCKET_NAME/models/000000-bootstrap -r READOUTS -v 3
+# Latest model should look like: /path/to/models/000123-something
+LATEST_MODEL=$(ls -d $MINIGO_MODELS/* | tail -1 | cut -f 1 -d '.')
+python3 main.py gtp $LATEST_MODEL -r $READOUTS -v 3
 ```
 
 (If no model is provided, it will initialize one with random values)
@@ -162,7 +209,7 @@ GTP](http://gogui.sourceforge.net/doc/reference-twogtp.html).
 gogui-twogtp -black 'python3 main.py gtp gs://$BUCKET_NAME/models/000000-bootstrap' -white 'gogui-display' -size 19 -komi 7.5 -verbose -auto
 ```
 
-Another way to play via GTP is to play against GnuGo, while spectating the games
+Another way to play via GTP is to watch it play against GnuGo, while spectating the games
 ```
 BLACK="gnugo --mode gtp"
 WHITE="python3 main.py gtp path/to/model"
@@ -171,16 +218,23 @@ TWOGTP="gogui-twogtp -black \"$BLACK\" -white \"$WHITE\" -games 10 \
 gogui -size 19 -program "$TWOGTP" -computer-both -auto
 ```
 
-Another way to play via GTP is to connect to CGOS, the [Computer Go Online Server](http://yss-aya.com/cgos/). The CGOS server hosted by boardspace.net is actually abandoned; you'll want to connect to the CGOS server at yss-aya.com.
-
-After configuring your cgos.config file, you can connect to CGOS with `cgosGtp -c cgos.config` and spectate your own game with `cgosView yss-aya.com 6819`
-
-Reinforcement Learning
+Training Minigo
 ======================
 
+Overview
+--------
+
 The following sequence of commands will allow you to do one iteration of
-reinforcement learning on 9x9. These are the basic commands used in the 
-kubernetified version. You'll need GCS object admin permissions all steps.
+reinforcement learning on 9x9. These are the basic commands used to produce the
+models and games referenced above.
+
+The commands are
+ - bootstrap: initializes a random model
+ - selfplay: plays games with the latest model, producing data used for training
+ - gather: groups games played with the same model into larger files of
+   tfexamples.
+ - train: trains a new model with the selfplay results from the most recent N
+   generations.
 
 Bootstrap
 ---------
@@ -190,7 +244,7 @@ This command creates a random model, which appears at .
 
 ```bash
 export MODEL_NAME=000000-bootstrap
-python3 main.py bootstrap gs://$BUCKET_NAME/models/$MODEL_NAME -n $BOARD_SIZE
+python3 main.py bootstrap gs://$BUCKET_NAME/models/$MODEL_NAME
 ```
 
 Self-play
@@ -207,25 +261,25 @@ gs://$BUCKET_NAME/sgf/$MODEL_NAME/local_worker/*.sgf
 ```bash
 python3 main.py selfplay gs://$BUCKET_NAME/models/$MODEL_NAME \
   --readouts 10 \
-  --games 8 \
-  -v 3 -n 9 \
+  -v 3 \
   --output-dir=gs://$BUCKET_NAME/data/selfplay/$MODEL_NAME/local_worker \
   --output-sgf=gs://$BUCKET_NAME/sgf/$MODEL_NAME/local_worker
 ```
-(-n 9 makes it play 9x9 games)
 
 Gather
 ------
-
-This command takes multiple tfrecord.zz files (which will probably be KBs in size)
-and shuffles them into tfrecord.zz files that are ~100 MB in size.
 
 ```
 python3 main.py gather
 ```
 
+This command takes multiple tfrecord.zz files (which will probably be KBs in size)
+and shuffles them into tfrecord.zz files that are ~100 MB in size.
+
 Gathering is done according to model numbers, so that games generated by
-one model stay together. The output will be in the directories
+one model stay together.  By default, [rl_loop.py](rl_loop.py) will use directories
+specified by the environment variable `BUCKET_NAME`, set at the top of
+[rl_loop.py](rl_loop.py).
 
 ```
 gs://$BUCKET_NAME/data/training_chunks/$MODEL_NAME-{chunk_number}.tfrecord.zz
@@ -240,11 +294,11 @@ python3 main.py gather \
   --output-directory=gs://$BUCKET_NAME/data/training_chunks
 ```
 
-Training a new model
---------------------
+Training
+--------
 
-This command finds the most recent 50 models' training chunks and trains
-starting from the latest model weights and generates a new set of model weights.
+This command finds the most recent 50 models' training chunks and trains a new
+model, starting from the latest model weights.
 
 Run the training job:
 ```
@@ -253,11 +307,10 @@ python3 main.py train gs://$BUCKET_NAME/data/training_chunks \
     --load-file=gs://$BUCKET_NAME/models/000000-bootstrap \
     --generation-num=1 \
     --logdir=path/to/tensorboard/logs \
-    -n 9
 ```
 
 The updated model weights will be saved at the end. (TODO: implement some sort
-of local checkpointing based on global_step that will resume appropriately.)
+of local checkpointing based on `global_step` that will resume appropriately.)
 
 Additionally, you can follow along with the training progress with TensorBoard - if you give each run a different name (`logs/my_training_run`, `logs/my_training_run2`), you can overlay the runs on top of each other.
 
@@ -269,11 +322,9 @@ Running Minigo on a Cluster
 ==============================
 
 As you might notice, playing games is fairly slow.  One way to speed up playing
-games is to run Minigo on many computers simultaneously.  Minigo was
-originally trained via a pipeline running many selfplay-workers simultaneously.
-The worker jobs are built into containers and run on a Kubernetes cluster,
-hosted on the Google Cloud Platform (TODO: links for installing GCP SDK,
-kubectl, etc.)
+games is to run Minigo on many computers simultaneously.  Minigo was originally
+trained by containerizing these worker jobs and running them on a Kubernetes
+cluster, hosted on the Google Cloud Platform.
 
 *NOTE* These commands will result in VMs being created and will result in
 charges to your GCP account!  *Proceed with care!*
@@ -314,22 +365,23 @@ your clusters...
 GCS for simple task signalling
 ------------------------------
 
-The main way these jobs interact is the filesystem -- which is just a GCS
-bucket mounted as a fuse filesystem inside their container.
+The main way these jobs interact is through GCS, a distributed webservice
+intended to behave like a filesystem.
 
-The selfplay jobs will find the newest model in their directory of models and
+The selfplay jobs will find the newest model in the GCS directory of models and
 play games with it, writing the games out to a different directory in the
 bucket.
 
 The training job will collect games from that directory and turn it into
-chunks, which it will use to play a new model.
+chunks, which it will use to train a new model, adding it to the directory of
+models, and completing the circle.
 
 
 Bringing up a cluster
 ---------------------
 
 0. Switch to the `cluster` directory
-1. Set the common environment variables in `common` corresponding to your GCP project and bucket names.
+1. Set the common environment variables in `common.sh` corresponding to your GCP project and bucket names.
 2. Run `deploy`, which will:
   a. Create a bucket
   b. Create a service account
@@ -352,29 +404,33 @@ Bringing up a cluster
     gke-minigo-default-pool-b09dcf70-50vm   Ready     <none>    5m        v1.7.8-gke.0
     ```
 
-4. (Optional, GPU only).  If you've set up a GPU enabled cluster, you'll need to install the NVIDIA drivers on each of the nodes in your cluster that will have GPU workers.  This is accomplished by running:
+4. (Optional, GPU only).  If you've set up a GPU enabled cluster, you'll need to
+   install the NVIDIA drivers on each of the nodes in your cluster that will
+   have GPU workers.  This is accomplished by running:
 
 ```
 kubectl apply -f gpu-provision-daemonset.yaml
 ```
 
 
-5. Resizing your cluster.
+5. Resizing your cluster.  Note that the cluster will *not* use autoscaling by
+   default, so it's possible to have a lot of idle containers running if you're
+   not careful!
 
   ```
   gcloud alpha container clusters resize $CLUSTER_NAME --zone=$ZONE --size=8
   ```
 
-Create Docker image
--------------------
+Creating Docker images
+----------------------
 
 You will need a Docker image in order to initialize the pods.
 
-First you need to update the param in the `Makefile`:
+If you would like to override the GCR Project or image tag, you can set:
 
 ```
-source common
-sed -i "s/tensor-go/$PROJECT/" Makefile
+export PROJECT=my-project
+export VERSION=0.1234
 ```
 
 Then `make` will produce and push the image!
@@ -405,7 +461,7 @@ share as well, limit the parallelism to the number of nodes available.
 Now launch the job via the launcher.  (it just subs in the environment variable
 for the bucket name, neat!)
 ```
-source common
+source common.sh
 envsubst < player.yaml | kubectl apply -f -
 ```
 
@@ -430,8 +486,8 @@ To kill the job,
 envsubst < player.yaml | kubectl delete -f -
 ```
 
-Preflight checks for a training run.
-====================================
+Preflight checklist for a training run.
+=======================================
 
 
 Setting up the selfplay cluster
@@ -439,7 +495,7 @@ Setting up the selfplay cluster
 
 * Check your gcloud -- authorized?  Correct default zone settings?
 * Check the project name, cluster name, & bucket name variables in the
-  `cluster/common` script.  Did you change things?
+  `cluster/common.sh` script.  Did you change things?
   * If Yes: Grep for the original string.  Depending on what you changed, you may
     need to change the yaml files for the selfplay workers.
 * Create the service account and bucket, if needed, by running `cluster/deploy`,
@@ -473,7 +529,7 @@ Setting up the selfplay cluster
 Useful things for the selfplay cluster
 --------------------------------------
 
-* Getting a list of the selfplay games ordered by most recent start
+* Getting a list of the selfplay games ordered by start time.
   ```
   kubectl get po --sort-by=.status.startTime
   ```
@@ -491,13 +547,9 @@ Useful things for the selfplay cluster
   ```
 
 
-Setting up logging via stackdriver, plus metrics, bla bla.
-
-
-If you've run rsync to collect a set of SGF files (cheatsheet: `python3
-rl_loop.py smart-rsync --source-dir="gs://$BUCKET_NAME/sgf/" --from-model-num 0
---game-dir=sgf/`), here are some handy
-bashisms to run on them:
+If you've run rsync to collect a set of SGF files (cheatsheet: `gsutil -m cp -r
+gs://$BUCKET_NAME/sgf/$MODEL_NAME sgf/`), here are some handy
+bash fragments to run on them:
 
 * Find the proportion of games won by one color:
   ```
@@ -521,7 +573,5 @@ bashisms to run on them:
   \; | ministat
   ```
 
-
-etc...
-
-
+Also check the 'oneoffs' directory for interesting scripts to analyze e.g. the
+resignation threshold.

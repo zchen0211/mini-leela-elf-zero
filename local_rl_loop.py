@@ -1,3 +1,17 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Runs a RL loop locally. Mostly for integration testing purposes.
 
 A successful run will bootstrap, selfplay, gather, and start training for
@@ -11,8 +25,6 @@ import tempfile
 import dual_net
 import go
 import main
-
-go.set_board_size(9)
 
 def rl_loop():
     # monkeypatch the hyperparams so that we get a quickly executing network.
@@ -35,18 +47,16 @@ def rl_loop():
             load_file=model_save_file,
             output_dir=model_selfplay_dir,
             output_sgf=sgf_dir,
-            readouts=10,
-            n=9)
+            readouts=10)
         main.selfplay(
             load_file=model_save_file,
             output_dir=model_selfplay_dir,
             output_sgf=sgf_dir,
-            readouts=10,
-            n=9)
+            readouts=10)
         print("Gathering game output...")
         main.gather(input_directory=selfplay_dir, output_directory=gather_dir)
         print("Training on gathered game data... (ctrl+C to quit)")
-        main.train(gather_dir, save_file=model_save_file, n=9, num_steps=10000)
+        main.train(gather_dir, save_file=model_save_file, num_steps=10000)
 
 if __name__ == '__main__':
     rl_loop()

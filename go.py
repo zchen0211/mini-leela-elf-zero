@@ -1,3 +1,17 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 '''
 A board is a NxN numpy array.
 A Coordinate is a tuple index into the board.
@@ -10,8 +24,11 @@ from collections import namedtuple
 import copy
 import itertools
 import numpy as np
+import os
 
 import coords
+
+N = int(os.environ.get('BOARD_SIZE', 9))
 
 # Represent a board as a numpy array, with 0 empty, 1 is black, -1 is white.
 # This means that swapping colors is as simple as multiplying array by -1.
@@ -20,34 +37,20 @@ WHITE, EMPTY, BLACK, FILL, KO, UNKNOWN = range(-1, 5)
 # Represents "group not found" in the LibertyTracker object
 MISSING_GROUP_ID = -1
 
-# these are initialized by set_board_size
-N = None
-ALL_COORDS = []
-EMPTY_BOARD = None
-NEIGHBORS = {}
-DIAGONALS = {}
+ALL_COORDS = [(i, j) for i in range(N) for j in range(N)]
+EMPTY_BOARD = np.zeros([N, N], dtype=np.int8)
+
+def _check_bounds(c):
+    return c[0] % N == c[0] and c[1] % N == c[1]
+
+NEIGHBORS = {(x, y): list(filter(_check_bounds, [(x+1, y), (x-1, y), (x, y+1), (x, y-1)])) for x, y in ALL_COORDS}
+DIAGONALS = {(x, y): list(filter(_check_bounds, [(x+1, y+1), (x+1, y-1), (x-1, y+1), (x-1, y-1)])) for x, y in ALL_COORDS}
 
 class IllegalMove(Exception): pass
 
 class PlayerMove(namedtuple('PlayerMove', ['color', 'move'])): pass
 
 class PositionWithContext(namedtuple('SgfPosition', ['position', 'next_move', 'result'])): pass
-
-def set_board_size(n):
-    '''
-    Hopefully nobody tries to run both 9x9 and 19x19 game instances at once.
-    Also, never do "from go import N, W, ALL_COORDS, EMPTY_BOARD".
-    '''
-    global N, ALL_COORDS, EMPTY_BOARD, NEIGHBORS, DIAGONALS
-    if N == n: return
-    N = n
-    ALL_COORDS = [(i, j) for i in range(n) for j in range(n)]
-    EMPTY_BOARD = np.zeros([n, n], dtype=np.int8)
-    def check_bounds(c):
-        return c[0] % n == c[0] and c[1] % n == c[1]
-
-    NEIGHBORS = {(x, y): list(filter(check_bounds, [(x+1, y), (x-1, y), (x, y+1), (x, y-1)])) for x, y in ALL_COORDS}
-    DIAGONALS = {(x, y): list(filter(check_bounds, [(x+1, y+1), (x+1, y-1), (x-1, y+1), (x-1, y-1)])) for x, y in ALL_COORDS}
 
 def place_stones(board, color, stones):
     for s in stones:
@@ -490,5 +493,3 @@ class Position():
             return 'W+' + '%.1f' % abs(score)
         else:
             return 'DRAW'
-
-set_board_size(19)

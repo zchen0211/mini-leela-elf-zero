@@ -1,7 +1,22 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 '''Utilities to create, read, write tf.Examples.'''
 import functools
 import numpy as np
 import tensorflow as tf
+import random
 
 import coords
 import features as features_lib
@@ -82,7 +97,8 @@ def batch_parse_tf_example(batch_size, example_batch):
     }
 
 def read_tf_records(batch_size, tf_records, num_repeats=None,
-                    shuffle_records=True, shuffle_examples=True):
+                    shuffle_records=True, shuffle_examples=True,
+                    filter_amount=1.0):
     '''
     Args:
         batch_size: batch size to return
@@ -90,8 +106,9 @@ def read_tf_records(batch_size, tf_records, num_repeats=None,
         num_repeats: how many times the data should be read (default: infinite)
         shuffle_records: whether to shuffle the order of files read
         shuffle_examples: whether to shuffle the tf.Examples
+        filter_amount: what fraction of records to keep
     Returns:
-        a dict of batched tensors
+        a tf dataset of batched tensors
     '''
     # compression_type here must agree with write_tf_examples
     # cycle_length = how many tfrecord files are read in parallel
@@ -99,12 +116,14 @@ def read_tf_records(batch_size, tf_records, num_repeats=None,
     #   moving to the next file
     # The idea is to shuffle both the order of the files being read,
     # and the examples being read from the files.
-    record_list = tf.data.Dataset.from_tensor_slices(tf_records)
     if shuffle_records:
-        record_list = record_list.shuffle(buffer_size=10000)
+        random.shuffle(tf_records)
+    record_list = tf.data.Dataset.from_tensor_slices(tf_records)
     dataset = record_list.interleave(lambda x:
             tf.data.TFRecordDataset(x, compression_type='ZLIB'),
             cycle_length=64, block_length=16)
+    dataset = dataset.filter(lambda x: tf.less(tf.random_uniform([1]), filter_amount)[0])
+    # TODO(amj): apply py_func for transforms here.
     if num_repeats is not None:
         dataset = dataset.repeat(num_repeats)
     else:
@@ -115,13 +134,16 @@ def read_tf_records(batch_size, tf_records, num_repeats=None,
     return dataset
 
 def get_input_tensors(batch_size, tf_records, num_repeats=None,
-                      shuffle_records=True, shuffle_examples=True):
+                      shuffle_records=True, shuffle_examples=True,
+                      filter_amount=0.05):
     '''Read tf.Records and prepare them for ingestion by dual_net
 
     Returns a dict of tensors (see return value of batch_parse_tf_example)
     '''
     dataset = read_tf_records(batch_size, tf_records, num_repeats=num_repeats,
-        shuffle_records=shuffle_records, shuffle_examples=shuffle_examples)
+                              shuffle_records=shuffle_records,
+                              shuffle_examples=shuffle_examples,
+                              filter_amount=filter_amount)
     dataset = dataset.filter(lambda t: tf.equal(tf.shape(t)[0], batch_size))
     dataset = dataset.map(functools.partial(batch_parse_tf_example, batch_size))
     return dataset.make_one_shot_iterator().get_next()
@@ -149,16 +171,16 @@ def _make_tf_example_from_pwc(position_w_context):
     value = position_w_context.result
     return make_tf_example(features, pi, value)
 
-def shuffle_tf_examples(batch_size, records_to_shuffle):
+def shuffle_tf_examples(gather_size, records_to_shuffle):
     '''Read through tf.Record and yield shuffled, but unparsed tf.Examples
 
     Args:
-        batch_size: The number of tf.Examples to be batched together
+        gather_size: The number of tf.Examples to be gathered together
         records_to_shuffle: A list of filenames
     Returns:
         An iterator yielding lists of bytes, which are serialized tf.Examples.
     '''
-    dataset = read_tf_records(batch_size, records_to_shuffle, num_repeats=1)
+    dataset = read_tf_records(gather_size, records_to_shuffle, num_repeats=1)
     batch = dataset.make_one_shot_iterator().get_next()
     sess = tf.Session()
     while True:
@@ -167,18 +189,3 @@ def shuffle_tf_examples(batch_size, records_to_shuffle):
             yield list(result)
         except tf.errors.OutOfRangeError:
             break
-
-def make_dataset_from_DSv2(dataset_v2, tf_record):
-    '''
-    (Deprecated!) Convert an existing DatasetV2 file into a tf_record file.
-    '''
-    import load_data_sets
-    ds = load_data_sets.DataSetV2.read(dataset_v2)
-    tf_examples = []
-    for i in range(ds.size):
-        tf_examples.append(make_tf_example(
-            ds.pos_features[i],
-            ds.next_moves[i],
-            ds.results[i]))
-    write_tf_examples(tf_record, tf_examples)
-

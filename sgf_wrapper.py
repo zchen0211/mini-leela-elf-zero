@@ -1,3 +1,17 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 '''
 Code to extract a series of positions + their next moves from an SGF.
 
@@ -17,11 +31,11 @@ from go import Position, PositionWithContext
 import utils
 import sgf
 
-SGF_TEMPLATE = '''(;GM[1]FF[4]CA[UTF-8]AP[MuGo_sgfgenerator]RU[{ruleset}]
+SGF_TEMPLATE = '''(;GM[1]FF[4]CA[UTF-8]AP[Minigo_sgfgenerator]RU[{ruleset}]
 SZ[{boardsize}]KM[{komi}]PW[{white_name}]PB[{black_name}]RE[{result}]
 {game_moves})'''
 
-PROGRAM_IDENTIFIER = "MuGo"
+PROGRAM_IDENTIFIER = "Minigo"
 
 def translate_sgf_move_qs(player_move,q):
   return "{move}C[{q:.4f}]".format(
@@ -44,7 +58,6 @@ def make_sgf(
     move_history,
     result_string,
     ruleset="Chinese",
-    boardsize=go.N,
     komi=7.5,
     white_name=PROGRAM_IDENTIFIER,
     black_name=PROGRAM_IDENTIFIER,
@@ -59,6 +72,7 @@ def make_sgf(
         result_string: "B+R", "W+0.5", etc.
         comments: iterable of string/None. Will be zipped with move_history.
     '''
+    boardsize = go.N
     game_moves = ''.join(translate_sgf_move(*z)
         for z in itertools.zip_longest(move_history, comments))
     result = result_string
@@ -134,7 +148,6 @@ def replay_sgf(sgf_contents):
     if props.get('KM') != None:
         komi = float(sgf_prop(props.get('KM')))
     result = utils.parse_game_result(sgf_prop(props.get('RE')))
-    go.set_board_size(int(sgf_prop(props.get('SZ'))))
 
     pos = Position(komi=komi)
     current_node = game.root

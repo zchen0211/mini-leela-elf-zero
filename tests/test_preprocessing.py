@@ -1,3 +1,17 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import itertools
 import tensorflow as tf
 import numpy as np
@@ -8,12 +22,11 @@ import preprocessing
 import features
 import go
 
-from test_utils import GoPositionTestCase
+from tests import test_utils
 
-go.set_board_size(9)
 TEST_SGF = "(;CA[UTF-8]SZ[9]PB[Murakawa Daisuke]PW[Iyama Yuta]KM[6.5]HA[0]RE[W+1.5]GM[1];B[fd];W[cf])"
 
-class TestPreprocessing(GoPositionTestCase):
+class TestPreprocessing(test_utils.MiniGoUnitTest):
     def create_random_data(self, num_examples):
         raw_data = []
         for i in range(num_examples):
@@ -24,9 +37,10 @@ class TestPreprocessing(GoPositionTestCase):
             raw_data.append((feature, pi, value))
         return raw_data
 
-    def extract_data(self, tf_record):
+    def extract_data(self, tf_record,filter_amount=1):
         tf_example_tensor = preprocessing.get_input_tensors(
-            1, [tf_record], num_repeats=1, shuffle_records=False, shuffle_examples=False)
+            1, [tf_record], num_repeats=1, shuffle_records=False, 
+            shuffle_examples=False, filter_amount=filter_amount)
         recovered_data = []
         with tf.Session() as sess:
             while True:
@@ -63,6 +77,18 @@ class TestPreprocessing(GoPositionTestCase):
             recovered_data = self.extract_data(f.name)
 
         self.assertEqualData(raw_data, recovered_data)
+
+    def test_filter(self):
+        raw_data = self.create_random_data(100)
+        tfexamples = list(map(preprocessing.make_tf_example, *zip(*raw_data)))
+
+        with tempfile.NamedTemporaryFile() as f:
+            preprocessing.write_tf_examples(f.name, tfexamples)
+            recovered_data = self.extract_data(f.name, filter_amount=.05)
+
+        #TODO: this will flake out very infrequently.  Use set_random_seed
+        self.assertLess(len(recovered_data), 50)
+
 
     def test_serialize_round_trip_no_parse(self):
         np.random.seed(1)

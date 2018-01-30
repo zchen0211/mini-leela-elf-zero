@@ -1,17 +1,30 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import unittest
 import unittest.mock as mock
 import numpy as np
-np.random.seed(0)
 
 import coords
 import go
 from go import Position
 from coords import kgs_to_flat
-from test_utils import load_board, GoPositionTestCase, MCTSTestMixin
+from tests import test_utils
 from mcts import MCTSNode
 from strategies import MCTSPlayerMixin, time_recommendation
 
-ALMOST_DONE_BOARD = load_board('''
+ALMOST_DONE_BOARD = test_utils.load_board('''
 .XO.XO.OO
 X.XXOOOO.
 XXXXXOOOO
@@ -68,8 +81,7 @@ def initialize_almost_done_player():
     return player
 
 
-class TestMCTSPlayerMixin(GoPositionTestCase, MCTSTestMixin):
-
+class TestMCTSPlayerMixin(test_utils.MiniGoUnitTest):
     def test_time_controls(self):
         secs_per_move = 5
         for time_limit in (10, 100, 1000):

@@ -1,8 +1,0 @@
-export PROJECT=tensor-go
-export CLUSTER_NAME=minigo
-export BUCKET_NAME=minigo-v3
-export SERVICE_ACCOUNT=minigo-services
-export SERVICE_ACCOUNT_EMAIL=${SERVICE_ACCOUNT}@${PROJECT}.iam.gserviceaccount.com
-export BOARD_SIZE=19
-export GAMES=8
-
