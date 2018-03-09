@@ -46,7 +46,10 @@ def rl_loop():
     #monkeypatch the shuffle buffer size so we don't spin forever shuffling up positions.
     preprocessing.SHUFFLE_BUFFER_SIZE = 1000
 
-    with tempfile.TemporaryDirectory() as base_dir:
+    base_dir = '/Users/zhuoyuan/Downloads/AlphaGo-local'
+    # with tempfile.TemporaryDirectory() as base_dir:
+    # with BASE_DIR as base_dir:
+    if base_dir is not None:
         working_dir = os.path.join(base_dir, 'models_in_training')
         model_save_path = os.path.join(base_dir, 'models', '000000-bootstrap')
         next_model_save_file = os.path.join(base_dir, 'models', '000001-nextmodel')

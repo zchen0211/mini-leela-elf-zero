@@ -15,7 +15,7 @@
 """Wrapper scripts to ensure that main.py commands are called correctly."""
 import argh
 import argparse
-import cloud_logging
+# import cloud_logging
 import logging
 import os
 import main
@@ -28,7 +28,8 @@ from tensorflow import gfile
 # Pull in environment variables. Run `source ./cluster/common` to set these.
 BUCKET_NAME = os.environ['BUCKET_NAME']
 
-BASE_DIR = "gs://{}".format(BUCKET_NAME)
+# BASE_DIR = "gs://{}".format(BUCKET_NAME)
+BASE_DIR = os.path.join(BUCKET_NAME, 'AlphaGo')
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
 SELFPLAY_DIR = os.path.join(BASE_DIR, 'data/selfplay')
 HOLDOUT_DIR = os.path.join(BASE_DIR, 'data/holdout')
@@ -108,8 +109,10 @@ def bootstrap():
 
 
 def selfplay(readouts=1600, verbose=2, resign_threshold=0.99):
-    _, model_name = get_latest_model()
+    # _, model_name = get_latest_model()
+    model_name = "/Users/zhuoyuan/Downloads/AlphaGo/models/model.ckpt-1"
     games = gfile.Glob(os.path.join(SELFPLAY_DIR, model_name, '*.zz'))
+    # games = []
     if len(games) > MAX_GAMES_PER_GENERATION:
         print("{} has enough games ({})".format(model_name, len(games)))
         time.sleep(10*60)
@@ -188,5 +191,5 @@ argh.add_commands(parser, [train, selfplay, gather,
 
 if __name__ == '__main__':
     print_flags()
-    cloud_logging.configure()
+    # cloud_logging.configure()
     argh.dispatch(parser)

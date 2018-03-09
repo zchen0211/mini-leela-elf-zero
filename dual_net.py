@@ -367,3 +367,8 @@ class UpdateRatioSessionHook(tf.train.SessionRunHook):
             self.summary_writer.add_summary(weight_update_summaries, global_step)
             self.before_weights = None
 
+
+if __name__ == "__main__":
+    save_file='/Users/zhuoyuan/Downloads/AlphaGo/models'
+    # test_net = DualNetwork(None)
+    bootstrap(save_file)
