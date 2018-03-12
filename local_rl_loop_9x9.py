@@ -20,7 +20,7 @@ overfit to a near-zero loss.
 """
 
 import os
-import tempfile
+import time
 
 import preprocessing
 import dual_net
@@ -37,8 +37,8 @@ def rl_loop():
     the reinforcement learning.
     """
     # monkeypatch the hyperparams so that we get a quickly executing network.
-    dual_net.get_default_hyperparams = lambda **kwargs: {
-        'k': 8, 'fc_width': 16, 'num_shared_layers': 1, 'l2_strength': 1e-4, 'momentum': 0.9}
+    # dual_net.get_default_hyperparams = lambda **kwargs: {
+    #     'k': 64, 'fc_width': 1024, 'l2_strength': 1e-4, 'momentum': 0.9}
 
     dual_net.TRAIN_BATCH_SIZE = 16
     dual_net.EXAMPLES_PER_GENERATION = 64
@@ -65,18 +65,21 @@ def rl_loop():
         main.bootstrap(working_dir, model_save_path)
         print("Playing some games...")
         # Do two selfplay runs to test gather functionality
+        t = time.time()
         main.selfplay(
             load_file=model_save_path,
             output_dir=model_selfplay_dir,
             output_sgf=sgf_dir,
             holdout_pct=0,
-            readouts=10)
+            readouts=200)
+        elapsed = time.time() - t
+        print(elapsed)
         main.selfplay(
             load_file=model_save_path,
             output_dir=model_selfplay_dir,
             output_sgf=sgf_dir,
             holdout_pct=0,
-            readouts=10)
+            readouts=200)
         # Do one holdout run to test validation
         main.selfplay(
             load_file=model_save_path,

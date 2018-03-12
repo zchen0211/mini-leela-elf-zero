@@ -29,7 +29,7 @@ from tensorflow import gfile
 BUCKET_NAME = os.environ['BUCKET_NAME']
 
 # BASE_DIR = "gs://{}".format(BUCKET_NAME)
-BASE_DIR = os.path.join(BUCKET_NAME, 'AlphaGo')
+BASE_DIR = os.path.join(BUCKET_NAME, 'AlphaGo-local')
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
 SELFPLAY_DIR = os.path.join(BASE_DIR, 'data/selfplay')
 HOLDOUT_DIR = os.path.join(BASE_DIR, 'data/holdout')
@@ -109,8 +109,8 @@ def bootstrap():
 
 
 def selfplay(readouts=1600, verbose=2, resign_threshold=0.99):
-    # _, model_name = get_latest_model()
-    model_name = "/Users/zhuoyuan/Downloads/AlphaGo/models/model.ckpt-1"
+    _, model_name = get_latest_model()
+    # model_name = "/Users/zhuoyuan/Downloads/AlphaGo/models/model.ckpt-1"
     games = gfile.Glob(os.path.join(SELFPLAY_DIR, model_name, '*.zz'))
     # games = []
     if len(games) > MAX_GAMES_PER_GENERATION:

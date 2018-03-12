@@ -180,8 +180,13 @@ def gather(
         output_directory: 'where to put collected games'='data/training_chunks/',
         examples_per_record: 'how many tf.examples to gather in each chunk'=EXAMPLES_PER_RECORD):
     _ensure_dir_exists(output_directory)
+    dir_list = [dir_ for dir_ in gfile.ListDirectory(input_directory) if dir_[0]!='.']
     models = [model_dir.strip('/')
-              for model_dir in sorted(gfile.ListDirectory(input_directory))[-50:]]
+              for model_dir in sorted(dir_list)[-50:]
+              ]
+    # models = [model_dir.strip('/')
+    #           for model_dir in sorted(gfile.ListDirectory(input_directory))[-50:]
+    #           ]
     with timer("Finding existing tfrecords..."):
         model_gamedata = {
             model: gfile.Glob(
