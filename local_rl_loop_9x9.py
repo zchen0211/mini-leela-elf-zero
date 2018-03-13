@@ -25,7 +25,7 @@ import time
 import preprocessing
 import dual_net
 import go
-import main
+import main_9x9
 from tensorflow import gfile
 import subprocess
 
@@ -37,8 +37,8 @@ def rl_loop():
     the reinforcement learning.
     """
     # monkeypatch the hyperparams so that we get a quickly executing network.
-    # dual_net.get_default_hyperparams = lambda **kwargs: {
-    #     'k': 64, 'fc_width': 1024, 'l2_strength': 1e-4, 'momentum': 0.9}
+    dual_net.get_default_hyperparams = lambda **kwargs: {
+        'k': 8, 'fc_width': 16, 'num_shared_layers': 1, 'l2_strength': 1e-4, 'momentum': 0.9}
 
     dual_net.TRAIN_BATCH_SIZE = 16
     dual_net.EXAMPLES_PER_GENERATION = 64
@@ -61,19 +61,22 @@ def rl_loop():
         sgf_dir = os.path.join(base_dir, 'sgf', '000000-bootstrap')
         os.makedirs(os.path.join(base_dir, 'data'), exist_ok=True)
 
+        '''
         print("Creating random initial weights...")
-        main.bootstrap(working_dir, model_save_path)
+        main_9x9.bootstrap(working_dir, model_save_path)
         print("Playing some games...")
         # Do two selfplay runs to test gather functionality
         t = time.time()
-        main.selfplay(
+        main_9x9.selfplay(
             load_file=model_save_path,
             output_dir=model_selfplay_dir,
             output_sgf=sgf_dir,
             holdout_pct=0,
-            readouts=200)
+            readouts=10,
+            game_num=10)
         elapsed = time.time() - t
         print(elapsed)
+        
         main.selfplay(
             load_file=model_save_path,
             output_dir=model_selfplay_dir,
@@ -88,15 +91,15 @@ def rl_loop():
             output_sgf=sgf_dir,
             holdout_pct=100,
             readouts=10)
-
+        '''
         print("See sgf files here?")
         sgf_listing = subprocess.check_output(["ls", "-l", sgf_dir + "/full"])
         print(sgf_listing.decode("utf-8"))
 
         print("Gathering game output...")
-        main.gather(input_directory=selfplay_dir, output_directory=gather_dir)
+        main_9x9.gather(input_directory=selfplay_dir, output_directory=gather_dir)
         print("Training on gathered game data...")
-        main.train(working_dir, gather_dir, next_model_save_file, generation_num=1)
+        main_9x9.train(working_dir, gather_dir, next_model_save_file, generation_num=1)
         print("Trying validate on 'holdout' game...")
         main.validate(working_dir, holdout_dir)
         print("Verifying that new checkpoint is playable...")
