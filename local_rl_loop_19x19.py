@@ -21,6 +21,7 @@ overfit to a near-zero loss.
 
 import os
 import tempfile
+import time
 
 import preprocessing
 import dual_net
@@ -62,12 +63,17 @@ def rl_loop():
         main.bootstrap(working_dir, model_save_path)
         print("Playing some games...")
         # Do two selfplay runs to test gather functionality
+
+        t = time.time()
         main.selfplay(
             load_file=model_save_path,
             output_dir=model_selfplay_dir,
             output_sgf=sgf_dir,
             holdout_pct=0,
             readouts=1600)
+        elapsed = time.time() - t
+        print('finally: %f' % elapsed)
+        """
         main.selfplay(
             load_file=model_save_path,
             output_dir=model_selfplay_dir,
@@ -100,7 +106,7 @@ def rl_loop():
             output_dir=model_selfplay_dir,
             output_sgf=sgf_dir,
             readouts=10)
-
+        """
 
 
 if __name__ == '__main__':
