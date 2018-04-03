@@ -20,6 +20,7 @@ overfit to a near-zero loss.
 """
 
 import os
+import tempfile
 import time
 
 import preprocessing
@@ -61,8 +62,23 @@ def rl_loop():
         sgf_dir = os.path.join(base_dir, 'sgf', '000000-bootstrap')
         os.makedirs(os.path.join(base_dir, 'data'), exist_ok=True)
 
+        main_9x9.selfplay(
+            load_file=model_save_path,
+            output_dir=model_selfplay_dir,
+            output_sgf=sgf_dir,
+            holdout_pct=0,
+            readouts=10,
+            game_num=10)
+
+        '''main_9x9.evaluate(
+            black_model=model_save_path,
+            white_model=model_save_path,
+            output_dir=sgf_dir,
+            readouts=10,
+            games=1,
+            verbose=0)
         '''
-        print("Creating random initial weights...")
+        '''print("Creating random initial weights...")
         main_9x9.bootstrap(working_dir, model_save_path)
         print("Playing some games...")
         # Do two selfplay runs to test gather functionality
