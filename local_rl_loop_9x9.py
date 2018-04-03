@@ -21,12 +21,11 @@ overfit to a near-zero loss.
 
 import os
 import tempfile
-import time
 
 import preprocessing
 import dual_net
 import go
-import main_9x9
+import main
 from tensorflow import gfile
 import subprocess
 
@@ -47,9 +46,8 @@ def rl_loop():
     #monkeypatch the shuffle buffer size so we don't spin forever shuffling up positions.
     preprocessing.SHUFFLE_BUFFER_SIZE = 1000
 
-    base_dir = '../AlphaGo-local'
+    base_dir = "../AlphaGo-local"
     # with tempfile.TemporaryDirectory() as base_dir:
-    # with BASE_DIR as base_dir:
     if base_dir is not None:
         working_dir = os.path.join(base_dir, 'models_in_training')
         model_save_path = os.path.join(base_dir, 'models', '000000-bootstrap')
@@ -62,43 +60,24 @@ def rl_loop():
         sgf_dir = os.path.join(base_dir, 'sgf', '000000-bootstrap')
         os.makedirs(os.path.join(base_dir, 'data'), exist_ok=True)
 
-        main_9x9.selfplay(
-            load_file=model_save_path,
-            output_dir=model_selfplay_dir,
-            output_sgf=sgf_dir,
-            holdout_pct=0,
-            readouts=10,
-            game_num=10)
-
-        '''main_9x9.evaluate(
-            black_model=model_save_path,
-            white_model=model_save_path,
-            output_dir=sgf_dir,
-            readouts=10,
-            games=1,
-            verbose=0)
-        '''
-        '''print("Creating random initial weights...")
-        main_9x9.bootstrap(working_dir, model_save_path)
+        # print("path: ", working_dir)
+        if not os.path.exists(working_dir):
+          print("Creating random initial weights...")
+          main.bootstrap(working_dir, model_save_path)
         print("Playing some games...")
         # Do two selfplay runs to test gather functionality
-        t = time.time()
-        main_9x9.selfplay(
-            load_file=model_save_path,
-            output_dir=model_selfplay_dir,
-            output_sgf=sgf_dir,
-            holdout_pct=0,
-            readouts=10,
-            game_num=10)
-        elapsed = time.time() - t
-        print(elapsed)
-        
         main.selfplay(
             load_file=model_save_path,
             output_dir=model_selfplay_dir,
             output_sgf=sgf_dir,
             holdout_pct=0,
-            readouts=200)
+            readouts=10)
+        '''main.selfplay(
+            load_file=model_save_path,
+            output_dir=model_selfplay_dir,
+            output_sgf=sgf_dir,
+            holdout_pct=0,
+            readouts=10)
         # Do one holdout run to test validation
         main.selfplay(
             load_file=model_save_path,
@@ -107,16 +86,15 @@ def rl_loop():
             output_sgf=sgf_dir,
             holdout_pct=100,
             readouts=10)
-        '''
-        
-        '''print("See sgf files here?")
+
+        print("See sgf files here?")
         sgf_listing = subprocess.check_output(["ls", "-l", sgf_dir + "/full"])
         print(sgf_listing.decode("utf-8"))
 
         print("Gathering game output...")
-        main_9x9.gather(input_directory=selfplay_dir, output_directory=gather_dir)
+        main.gather(input_directory=selfplay_dir, output_directory=gather_dir)
         print("Training on gathered game data...")
-        main_9x9.train(working_dir, gather_dir, next_model_save_file, generation_num=1)
+        main.train(working_dir, gather_dir, next_model_save_file, generation_num=1)
         print("Trying validate on 'holdout' game...")
         main.validate(working_dir, holdout_dir)
         print("Verifying that new checkpoint is playable...")

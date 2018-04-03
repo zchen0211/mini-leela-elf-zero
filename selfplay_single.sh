@@ -7,7 +7,6 @@
 
 #SBATCH --nodes=1
 #SBATCH --gres:gpu=1
-#SBATCH --ntasks-per-node=8
 
 ### Section 2: Setting environment variables for the job
 
