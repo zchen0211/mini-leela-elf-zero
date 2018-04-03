@@ -108,7 +108,8 @@ def rl_loop():
             holdout_pct=100,
             readouts=10)
         '''
-        print("See sgf files here?")
+        
+        '''print("See sgf files here?")
         sgf_listing = subprocess.check_output(["ls", "-l", sgf_dir + "/full"])
         print(sgf_listing.decode("utf-8"))
 
@@ -125,7 +126,7 @@ def rl_loop():
             output_dir=model_selfplay_dir,
             output_sgf=sgf_dir,
             readouts=10)
-
+        '''
 
 
 if __name__ == '__main__':
