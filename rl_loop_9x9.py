@@ -15,10 +15,10 @@
 """Wrapper scripts to ensure that main.py commands are called correctly."""
 import argh
 import argparse
-# import cloud_logging
+import cloud_logging
 import logging
 import os
-import main_9x9
+import main
 import shipname
 import sys
 import time
@@ -27,10 +27,10 @@ from tensorflow import gfile
 
 # Pull in environment variables. Run `source ./cluster/common` to set these.
 # BUCKET_NAME = os.environ['BUCKET_NAME']
-BUCKET_NAME = '../'
+BUCKET_NAME = "No Bucket! Running in local mode."
 
 # BASE_DIR = "gs://{}".format(BUCKET_NAME)
-BASE_DIR = os.path.join(BUCKET_NAME, 'AlphaGo-local')
+BASE_DIR = "/checkpoint/zhuoyuan/"
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
 SELFPLAY_DIR = os.path.join(BASE_DIR, 'data/selfplay')
 HOLDOUT_DIR = os.path.join(BASE_DIR, 'data/holdout')
@@ -111,9 +111,7 @@ def bootstrap():
 
 def selfplay(readouts=1600, verbose=2, resign_threshold=0.99):
     _, model_name = get_latest_model()
-    # model_name = "/Users/zhuoyuan/Downloads/AlphaGo/models/model.ckpt-1"
     games = gfile.Glob(os.path.join(SELFPLAY_DIR, model_name, '*.zz'))
-    # games = []
     if len(games) > MAX_GAMES_PER_GENERATION:
         print("{} has enough games ({})".format(model_name, len(games)))
         time.sleep(10*60)
@@ -137,7 +135,7 @@ def selfplay(readouts=1600, verbose=2, resign_threshold=0.99):
 
 def gather():
     print("Gathering game output...")
-    main_9x9.gather(input_directory=SELFPLAY_DIR,
+    main.gather(input_directory=SELFPLAY_DIR,
                 output_directory=TRAINING_CHUNK_DIR)
 
 
@@ -149,7 +147,7 @@ def train():
     load_file = os.path.join(MODELS_DIR, model_name)
     save_file = os.path.join(MODELS_DIR, new_model_name)
     try:
-        main_9x9.train(ESTIMATOR_WORKING_DIR, TRAINING_CHUNK_DIR, save_file,
+        main.train(ESTIMATOR_WORKING_DIR, TRAINING_CHUNK_DIR, save_file,
                    generation_num=model_num + 1)
     except:
         print("Got an error training, muddling on...")
@@ -192,5 +190,5 @@ argh.add_commands(parser, [train, selfplay, gather,
 
 if __name__ == '__main__':
     print_flags()
-    # cloud_logging.configure()
+    cloud_logging.configure()
     argh.dispatch(parser)

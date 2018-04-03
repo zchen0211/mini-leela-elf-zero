@@ -21,7 +21,6 @@ If the gather job dies more than three times, we quit entirely.
 import subprocess
 import sys
 from utils import timer
-import rl_loop_9x9
 
 
 def loop():
@@ -30,11 +29,7 @@ def loop():
     while True:
         print("==================================")
         with timer("Gather"):
-            # the stupid way, do not separate data collection and training
-            rl_loop_9x9.gather()
-            '''# hacky
-            python_dir = "/Users/zhuoyuan/miniconda3/bin/"
-            gather = subprocess.call(python_dir+"python rl_loop_9x9.py gather", shell=True)
+            gather = subprocess.call("python rl_loop_9x9.py gather", shell=True)
             if gather != 0:
                 print("Error in gather, retrying")
                 gather_errors += 1
@@ -42,12 +37,11 @@ def loop():
                     print("Gathering died too many times!")
                     sys.exit(1)
                 continue
-            '''
         gather_errors = 0
+        break
 
-        rl_loop_9x9.train()
-        # with timer("Train"):
-        #     subprocess.call("python rl_loop.py train", shell=True)
+        with timer("Train"):
+            subprocess.call("python rl_loop.py train", shell=True)
 
         with timer("validate"):
             subprocess.call("python rl_loop.py validate", shell=True)

@@ -46,7 +46,7 @@ def rl_loop():
     #monkeypatch the shuffle buffer size so we don't spin forever shuffling up positions.
     preprocessing.SHUFFLE_BUFFER_SIZE = 1000
 
-    base_dir = "../AlphaGo-local"
+    base_dir = "/checkpoint/zhuoyuan/"
     # with tempfile.TemporaryDirectory() as base_dir:
     if base_dir is not None:
         working_dir = os.path.join(base_dir, 'models_in_training')
