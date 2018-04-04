@@ -44,7 +44,7 @@ def loop():
 
         # validate on the dir
         with timer("validate"):
-            subprocess.call("python rl_loop.py validate", shell=True)
+            subprocess.call("python rl_loop_9x9.py validate", shell=True)
 
 
 if __name__ == '__main__':

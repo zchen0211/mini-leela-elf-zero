@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=minigo-selfplay
+#SBATCH --job-name=minigo-train
 #SBATCH --output=/checkpoint/%u/jobs/sample-%j.out
 #SBATCH --error=/checkpoint/%u/jobs/sample-%j.err
 #SBATCH --partition=learnfair
@@ -10,4 +10,4 @@
 
 ### Section 2: Setting environment variables for the job
 
-srun --label python rl_loop_9x9.py selfplay --readouts=200 -v 0
+srun --label python rl_runner_9x9.py
