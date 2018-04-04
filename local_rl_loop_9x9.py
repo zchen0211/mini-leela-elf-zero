@@ -66,45 +66,15 @@ def rl_loop():
           main.bootstrap(working_dir, model_save_path)
         print("Playing some games...")
         # Do two selfplay runs to test gather functionality
-        main.selfplay(
-            load_file=model_save_path,
-            output_dir=model_selfplay_dir,
-            output_sgf=sgf_dir,
-            holdout_pct=0,
-            readouts=10)
-        '''main.selfplay(
-            load_file=model_save_path,
-            output_dir=model_selfplay_dir,
-            output_sgf=sgf_dir,
-            holdout_pct=0,
-            readouts=10)
-        # Do one holdout run to test validation
-        main.selfplay(
-            load_file=model_save_path,
-            holdout_dir=holdout_dir,
-            output_dir=model_selfplay_dir,
-            output_sgf=sgf_dir,
-            holdout_pct=100,
-            readouts=10)
-
-        print("See sgf files here?")
-        sgf_listing = subprocess.check_output(["ls", "-l", sgf_dir + "/full"])
-        print(sgf_listing.decode("utf-8"))
-
-        print("Gathering game output...")
-        main.gather(input_directory=selfplay_dir, output_directory=gather_dir)
-        print("Training on gathered game data...")
-        main.train(working_dir, gather_dir, next_model_save_file, generation_num=1)
-        print("Trying validate on 'holdout' game...")
-        main.validate(working_dir, holdout_dir)
-        print("Verifying that new checkpoint is playable...")
-        main.selfplay(
-            load_file=next_model_save_file,
-            holdout_dir=holdout_dir,
-            output_dir=model_selfplay_dir,
-            output_sgf=sgf_dir,
-            readouts=10)
-        '''
+        # for i in range(30):
+        while True:
+          main.selfplay(
+              load_file=model_save_path,
+              output_dir=model_selfplay_dir,
+              output_sgf=sgf_dir,
+              holdout_pct=0,
+              readouts=10,
+              verbose=0)
 
 
 if __name__ == '__main__':
