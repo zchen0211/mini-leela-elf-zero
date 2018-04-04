@@ -112,30 +112,31 @@ def bootstrap():
 def selfplay(readouts=1600, verbose=2, resign_threshold=0.99):
     # MODELS_DIR: "/checkpoint/zhuoyuan/models"
     # model_name: "000000-bootstrap"
-    _, model_name = get_latest_model()
-    if os.path.exists(SELFPLAY_DIR):
-        games = gfile.Glob(os.path.join(SELFPLAY_DIR, model_name, '*.zz'))
-    else:
-        games = []
-    if len(games) > MAX_GAMES_PER_GENERATION:
-        print("{} has enough games ({})".format(model_name, len(games)))
-        time.sleep(10*60)
-        sys.exit(1)
-    print("Playing a game with model {}".format(model_name))
-    model_save_path = os.path.join(MODELS_DIR, model_name)
-    game_output_dir = os.path.join(SELFPLAY_DIR, model_name)
-    game_holdout_dir = os.path.join(HOLDOUT_DIR, model_name)
-    sgf_dir = os.path.join(SGF_DIR, model_name)
-    main.selfplay(
-        load_file=model_save_path,
-        output_dir=game_output_dir,
-        holdout_dir=game_holdout_dir,
-        output_sgf=sgf_dir,
-        readouts=readouts,
-        holdout_pct=HOLDOUT_PCT,
-        resign_threshold=resign_threshold,
-        verbose=verbose,
-    )
+    while True:
+        _, model_name = get_latest_model()
+        if os.path.exists(SELFPLAY_DIR):
+            games = gfile.Glob(os.path.join(SELFPLAY_DIR, model_name, '*.zz'))
+        else:
+            games = []
+        if len(games) > MAX_GAMES_PER_GENERATION:
+            print("{} has enough games ({})".format(model_name, len(games)))
+            time.sleep(10*60)
+            sys.exit(1)
+        print("Playing a game with model {}".format(model_name))
+        model_save_path = os.path.join(MODELS_DIR, model_name)
+        game_output_dir = os.path.join(SELFPLAY_DIR, model_name)
+        game_holdout_dir = os.path.join(HOLDOUT_DIR, model_name)
+        sgf_dir = os.path.join(SGF_DIR, model_name)
+        main.selfplay(
+            load_file=model_save_path,
+            output_dir=game_output_dir,
+            holdout_dir=game_holdout_dir,
+            output_sgf=sgf_dir,
+            readouts=readouts,
+            holdout_pct=HOLDOUT_PCT,
+            resign_threshold=resign_threshold,
+            verbose=verbose,
+        )
 
 
 def gather():
@@ -196,4 +197,8 @@ argh.add_commands(parser, [train, selfplay, gather,
 if __name__ == '__main__':
     print_flags()
     cloud_logging.configure()
+    # TODO: fix?
+    # infinite loop to do selfplay
+    # change this line if bootstrap
+    # while True:
     argh.dispatch(parser)

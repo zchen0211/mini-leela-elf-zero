@@ -38,11 +38,11 @@ def loop():
                     sys.exit(1)
                 continue
         gather_errors = 0
-        break
 
         with timer("Train"):
-            subprocess.call("python rl_loop.py train", shell=True)
+            subprocess.call("python rl_loop_9x9.py train", shell=True)
 
+        # validate on the dir
         with timer("validate"):
             subprocess.call("python rl_loop.py validate", shell=True)
 
