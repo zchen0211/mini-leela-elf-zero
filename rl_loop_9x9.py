@@ -110,8 +110,13 @@ def bootstrap():
 
 
 def selfplay(readouts=1600, verbose=2, resign_threshold=0.99):
+    # MODELS_DIR: "/checkpoint/zhuoyuan/models"
+    # model_name: "000000-bootstrap"
     _, model_name = get_latest_model()
-    games = gfile.Glob(os.path.join(SELFPLAY_DIR, model_name, '*.zz'))
+    if os.path.exists(SELFPLAY_DIR):
+        games = gfile.Glob(os.path.join(SELFPLAY_DIR, model_name, '*.zz'))
+    else:
+        games = []
     if len(games) > MAX_GAMES_PER_GENERATION:
         print("{} has enough games ({})".format(model_name, len(games)))
         time.sleep(10*60)
