@@ -180,6 +180,10 @@ def validate(model_num=None, validate_name=None):
     holdout_dirs = [os.path.join(HOLDOUT_DIR, pair[1])
                     for pair in models[-50:]]
 
+    print("Estimator dir: ", ESTIMATOR_WORKING_DIR)
+    print("holdout_dirs: ", holdout_dirs)
+    print("checkpoint: ", os.path.join(MODELS_DIR, model_name))
+    print("validate name: ", validate_name)
     main.validate(ESTIMATOR_WORKING_DIR, *holdout_dirs,
                   checkpoint_name=os.path.join(MODELS_DIR, model_name),
                   validate_name=validate_name)
