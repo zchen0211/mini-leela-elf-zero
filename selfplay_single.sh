@@ -6,7 +6,7 @@
 #SBATCH --partition=learnfair
 
 #SBATCH --nodes=1
-#SBATCH --gres:gpu=1
+#SBATCH --gres=gpu:1
 
 ### Section 2: Setting environment variables for the job
 
