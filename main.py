@@ -23,6 +23,7 @@ import socket
 import sys
 import tempfile
 import time
+from absl import flags
 import cloud_logging
 from tqdm import tqdm
 import gzip
@@ -92,6 +93,7 @@ def bootstrap(
         _ensure_dir_exists(os.path.dirname(model_save_path))
         dual_net.bootstrap(working_dir)
         dual_net.export_model(working_dir, model_save_path)
+        freeze_graph(model_save_path)
 
 
 def train(
@@ -107,6 +109,7 @@ def train(
     with timer("Training"):
         dual_net.train(working_dir, tf_records, generation_num)
         dual_net.export_model(working_dir, model_save_path)
+        freeze_graph(model_save_path)
 
 
 def validate(
@@ -230,10 +233,55 @@ def gather(
         f.write('\n'.join(sorted(already_processed)))
 
 
+def convert(load_file, dest_file):
+    from tensorflow.python.framework import meta_graph
+    features, labels = dual_net.get_inference_input()
+    dual_net.model_fn(features, labels, tf.estimator.ModeKeys.PREDICT,
+                      dual_net.get_default_hyperparams())
+    sess = tf.Session()
+
+    # retrieve the global step as a python value
+    ckpt = tf.train.load_checkpoint(load_file)
+    global_step_value = ckpt.get_tensor('global_step')
+
+    # restore all saved weights, except global_step
+    meta_graph_def = meta_graph.read_meta_graph_file(
+        load_file + '.meta')
+    stored_var_names = set([n.name
+                            for n in meta_graph_def.graph_def.node
+                            if n.op == 'VariableV2'])
+    stored_var_names.remove('global_step')
+    var_list = [v for v in tf.global_variables()
+                if v.op.name in stored_var_names]
+    tf.train.Saver(var_list=var_list).restore(sess, load_file)
+
+    # manually set the global step
+    global_step_tensor = tf.train.get_or_create_global_step()
+    assign_op = tf.assign(global_step_tensor, global_step_value)
+    sess.run(assign_op)
+
+    # export a new savedmodel that has the right global step type
+    tf.train.Saver().save(sess, dest_file)
+    sess.close()
+    tf.reset_default_graph()
+
+
+def freeze_graph(load_file):
+    """ Loads a network and serializes just the inference parts for use by e.g. the C++ binary """
+    n = dual_net.DualNetwork(load_file)
+    out_graph = tf.graph_util.convert_variables_to_constants(
+        n.sess, n.sess.graph.as_graph_def(), ["policy_output", "value_output"])
+    with open(os.path.join(load_file + '.pb'), 'wb') as f:
+         f.write(out_graph.SerializeToString())
+
+
 parser = argparse.ArgumentParser()
-argh.add_commands(parser, [gtp, bootstrap, train,
-                           selfplay, gather, evaluate, validate])
+argh.add_commands(parser, [gtp, bootstrap, train, freeze_graph,
+                           selfplay, gather, evaluate, validate, convert])
 
 if __name__ == '__main__':
     cloud_logging.configure()
-    argh.dispatch(parser)
+    # Let absl.flags parse known flags from argv, then pass the remaining flags
+    # into argh for dispatching.
+    remaining_argv = flags.FLAGS(sys.argv, known_only=True)
+    argh.dispatch(parser, argv=remaining_argv[1:])

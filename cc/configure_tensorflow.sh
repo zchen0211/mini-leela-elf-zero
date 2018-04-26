@@ -5,12 +5,31 @@ set -e
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 dst_dir="${script_dir}/tensorflow"
 tmp_dir="$(mktemp -d -p /tmp minigo_tf.XXXXXX)"
+version_tag="v1.6.0-rc1"
 
 echo "Cloning tensorflow to ${tmp_dir}"
 git clone https://github.com/tensorflow/tensorflow "${tmp_dir}"
 
-echo "Configuring tensorflow"
 pushd "${tmp_dir}"
+
+echo "Checking out ${version_tag}"
+git checkout "tags/${version_tag}"
+
+# Run the TensorFlow configuration script, setting reasonable values for most
+# of the options.
+echo "Configuring tensorflow"
+TF_NEED_JEMALLOC=1 \
+TF_NEED_GCP=1 \
+TF_NEED_HDFS=0 \
+TF_NEED_S3=0 \
+TF_NEED_KAFKA=0 \
+TF_NEED_GDR=0 \
+TF_NEED_VERBS=0 \
+TF_NEED_OPENCL_SYCL=0 \
+TF_CUDA_CLANG=0 \
+TF_NEED_TENSORRT=0 \
+TF_NEED_MPI=0 \
+TF_SET_ANDROID_WORKSPACE=0 \
 ./configure
 
 echo "Building tensorflow package"
