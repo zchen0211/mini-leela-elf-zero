@@ -12,12 +12,14 @@ import go
 
 class DualNetwork():
     def __init__(self, save_file):
-        # "./save-1608000.bin"
         self.save_file = save_file
         self.model = Model_PolicyValue({}, {})
         self.model.eval()
         self.replace_prefix = [['resnet.module', 'resnet']]
         self.initialize_weights(save_file)
+        self.cuda = torch.cuda.is_available()
+        if self.cuda:
+            self.model = self.model.cuda()
 
     def initialize_weights(self, save_file):
         replace_prefix = [['resnet.module', 'resnet']]
@@ -30,7 +32,7 @@ class DualNetwork():
 
     def run_many(self, positions, use_random_symmetry=True):
         processed = list(map(features.extract_features, positions))
-        print(processed[0].shape)
+        # print(processed[0].shape)
         if use_random_symmetry:
             syms_used, processed = symmetries.randomize_symmetries_feat(
                 processed)
@@ -44,13 +46,16 @@ class DualNetwork():
 
         # print(input_.shape, input_.dtype)
         # run the neural nerwork
-        batch = {"s": torch.from_numpy(processed)}
+        # batch = {"s": torch.from_numpy(processed)}
+        batch = torch.from_numpy(processed)
+        if self.cuda:
+            batch = batch.cuda()
         # print(batch["s"].shape)
         outputs = self.model(batch)
         probabilities, value = outputs['pi'], outputs['V']
         # print(probabilities)
         # print(value)
-        if probabilities.is_cuda:
+        if self.cuda:
           probabilities = probabilities.cpu()
           value = value.cpu()
         probabilities = probabilities.detach().numpy()
@@ -69,12 +74,12 @@ if __name__ == "__main__":
     input_ = np.zeros((1, 18, 19, 19)).astype(np.float32)
     input_[:, 16, :, :] = 1.
     # batch = {"s": torch.from_numpy(input_)}
-    batch = {"s": torch.from_numpy(input_).cuda()}
+    # batch = torch.from_numpy(input_)
 
-    fn = "/private/home/zhuoyuan/AlphaGo/ELF2_models/save-1661000.bin"
-    # fn = "/Users/zhuoyuan/Exp/AlphaGo/ELF2_models/save-1661000.bin"
+    # fn = "/private/home/zhuoyuan/AlphaGo/ELF2_models/save-1661000.bin"
+    fn = "/Users/zhuoyuan/Exp/AlphaGo/ELF2_models/save-1661000.bin"
     model = DualNetwork(fn)
-    model.model = model.model.cuda()
+    # model.model = model.model.cuda()
 
     # to run directly
     # res = model.model(batch)
