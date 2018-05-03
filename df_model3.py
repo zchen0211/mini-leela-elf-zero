@@ -231,7 +231,7 @@ class Model_PolicyValue(Model):
     """
     def forward(self, x):
         s = self._var(x)
-        print(type(s), s.volatile)
+        # print(type(s), s.volatile)
 
         s = self.init_conv(s)
         # print("init conv", s)

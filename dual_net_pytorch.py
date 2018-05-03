@@ -15,6 +15,7 @@ class DualNetwork():
         self.save_file = save_file
         self.model = Model_PolicyValue({}, {})
         self.model.eval()
+        self.model.set_volatile(True)
         self.replace_prefix = [['resnet.module', 'resnet']]
         self.initialize_weights(save_file)
         self.cuda = torch.cuda.is_available()
@@ -76,8 +77,8 @@ if __name__ == "__main__":
     # batch = {"s": torch.from_numpy(input_)}
     # batch = torch.from_numpy(input_)
 
-    # fn = "/private/home/zhuoyuan/AlphaGo/ELF2_models/save-1661000.bin"
-    fn = "/Users/zhuoyuan/Exp/AlphaGo/ELF2_models/save-1661000.bin"
+    fn = "/private/home/zhuoyuan/AlphaGo/ELF2_models/save-1661000.bin"
+    # fn = "/Users/zhuoyuan/Exp/AlphaGo/ELF2_models/save-1661000.bin"
     model = DualNetwork(fn)
     # model.model = model.model.cuda()
 
