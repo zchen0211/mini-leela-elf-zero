@@ -41,13 +41,20 @@ INVERSES = {
 
 IMPLS = {
     'identity': lambda x: x,
-    'rot90': np.rot90,
-    'rot180': functools.partial(np.rot90, k=2),
-    'rot270': functools.partial(np.rot90, k=3),
-    'flip': lambda x: np.rot90(np.fliplr(x)),
-    'fliprot90': np.flipud,
-    'fliprot180': lambda x: np.rot90(np.flipud(x)),
-    'fliprot270': np.fliplr,
+    'rot90': functools.partial(np.rot90, axes=(-2,-1)),
+    # np.rot90,
+    'rot180': functools.partial(np.rot90, axes=(-2,-1), k=2), 
+    # functools.partial(np.rot90, k=2),
+    'rot270': functools.partial(np.rot90, axes=(-2,-1), k=3),
+    # functools.partial(np.rot90, k=3),
+    'flip': lambda x: np.rot90(np.flip(x, axis=-1), axes=(-2,-1)),
+    # lambda x: np.rot90(np.fliplr(x)),
+    'fliprot90': functools.partial(np.flip, axis=-2),
+    # np.flipud,
+    'fliprot180': lambda x: np.rot90(np.flip(x, axis=-2), axes=(-2,-1)),
+    # lambda x: np.rot90(np.flipud(x)),
+    'fliprot270': functools.partial(np.flip, axis=-1),
+    # np.fliplr,
 }
 
 assert set(INVERSES.keys()) == set(IMPLS.keys())

@@ -21,7 +21,8 @@ import go
 import random
 import sys
 import os
-from dual_net import DualNetwork
+# from dual_net import DualNetwork
+from dual_net_pytorch import DualNetwork
 from strategies import MCTSPlayerMixin, CGOSPlayerMixin
 
 
@@ -117,13 +118,15 @@ class CGOSPlayer(CGOSPlayerMixin, GtpInterface):
 
 
 def make_gtp_instance(read_file, readouts_per_move=100, verbosity=1, cgos_mode=False):
-    n = DualNetwork(read_file)
+    # n = DualNetwork(read_file)
+    n = DualNetwork("/Users/zhuoyuan/Exp/AlphaGo/ELF2_models/save-1661000.bin")
     if cgos_mode:
         instance = CGOSPlayer(n, seconds_per_move=5,
                               verbosity=verbosity, two_player_mode=True)
     else:
         instance = MCTSPlayer(n, simulations_per_move=readouts_per_move,
                               verbosity=verbosity, two_player_mode=True)
-    name = "Somebot-" + os.path.basename(read_file)
+    # name = "Somebot-" + os.path.basename(read_file)
+    name = "Somebot"
     gtp_engine = gtp_extensions.GTPDeluxe(instance, name=name)
     return gtp_engine
