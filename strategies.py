@@ -124,6 +124,8 @@ class MCTSPlayerMixin:
         if self.verbosity > 3:
             print(self.root.position, file=sys.stderr)
 
+        # print score before pick move
+        print("value: ", self.root.Q)
         return self.pick_move()
 
     def play_move(self, c):
