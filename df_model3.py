@@ -230,7 +230,7 @@ class Model_PolicyValue(Model):
                   "(for cooldown = 50) in this case")
     """
     def forward(self, x):
-        s = self._var(x["s"])
+        s = self._var(x["s"]).cuda()
         print(type(s), s.volatile)
 
         s = self.init_conv(s)

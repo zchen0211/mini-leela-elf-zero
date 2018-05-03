@@ -50,6 +50,9 @@ class DualNetwork():
         probabilities, value = outputs['pi'], outputs['V']
         # print(probabilities)
         # print(value)
+        if probabilities.is_cuda:
+          probabilities = probabilities.cpu()
+          value = value.cpu()
         probabilities = probabilities.detach().numpy()
         value = value.detach().numpy()
         if use_random_symmetry:
@@ -65,10 +68,13 @@ class DualNetwork():
 if __name__ == "__main__":
     input_ = np.zeros((1, 18, 19, 19)).astype(np.float32)
     input_[:, 16, :, :] = 1.
-    batch = {"s": torch.from_numpy(input_)}
+    # batch = {"s": torch.from_numpy(input_)}
+    batch = {"s": torch.from_numpy(input_).cuda()}
 
-    fn = "/Users/zhuoyuan/Exp/AlphaGo/ELF2_models/save-1661000.bin"
+    fn = "/private/home/zhuoyuan/AlphaGo/ELF2_models/save-1661000.bin"
+    # fn = "/Users/zhuoyuan/Exp/AlphaGo/ELF2_models/save-1661000.bin"
     model = DualNetwork(fn)
+    model.model = model.model.cuda()
 
     # to run directly
     # res = model.model(batch)
