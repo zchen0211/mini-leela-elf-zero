@@ -119,8 +119,8 @@ class CGOSPlayer(CGOSPlayerMixin, GtpInterface):
 
 def make_gtp_instance(read_file, readouts_per_move=100, verbosity=1, cgos_mode=False):
     # n = DualNetwork(read_file)
-    fn = "/private/home/zhuoyuan/AlphaGo/ELF2_models/save-1661000.bin"
-    # fn = "/Users/zhuoyuan/Exp/AlphaGo/ELF2_models/save-1661000.bin"
+    # fn = "/private/home/zhuoyuan/AlphaGo/ELF2_models/save-1661000.bin"
+    fn = "/Users/zhuoyuan/Exp/AlphaGo/ELF2_models/save-1661000.bin"
     n = DualNetwork(fn)
     if cgos_mode:
         instance = CGOSPlayer(n, seconds_per_move=5,

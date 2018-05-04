@@ -3,12 +3,7 @@ import os
 import torch.nn as nn
 import torch.distributed as dist
 
-# from elf.options import auto_import_options, PyOptionSpec
-# from rlpytorch import Model
 from model_base import Model
-
-# from elfgames.go.mcts_prediction import MCTSPrediction
-# from elfgames.go.multiple_prediction import MultiplePrediction
 
 
 class Block(Model):
@@ -65,67 +60,12 @@ class GoResNet(Model):
 
 
 class Model_PolicyValue(Model):
-    """ @classmethod
-    def get_option_spec(cls):
-        spec = PyOptionSpec()
-        spec.addBoolOption(
-            'bn',
-            'toggles batch norm',
-            True)
-        spec.addBoolOption(
-            'leaky_relu',
-            'toggles leaky ReLU',
-            False)
-        spec.addFloatOption(
-            'bn_momentum',
-            'batch norm momentum (pytorch style)',
-            0.1)
-        spec.addIntOption(
-            'num_block',
-            'number of blocks',
-            20)
-        spec.addIntOption(
-            'dim',
-            'model dimension',
-            128)
-        spec.addBoolOption(
-            'use_data_parallel',
-            'TODO: fill this in',
-            False)
-        spec.addBoolOption(
-            'use_data_parallel_distributed',
-            'TODO: fill this in',
-            False)
-        spec.addIntOption(
-            'dist_rank',
-            'TODO: fill this in',
-            -1)
-        spec.addIntOption(
-            'dist_world_size',
-            'TODO: fill this in',
-            -1)
-        spec.addStrOption(
-            'dist_url',
-            'TODO: fill this in',
-            '')
-        spec.addIntOption(
-            'gpu',
-            'which gpu to use',
-            -1)
-
-        # spec.merge(GoResNet.get_option_spec())
-
-        return spec
-    """
-    # @auto_import_options
     def __init__(self, option_map, params):
         super().__init__(option_map, params)
 
         self.board_size = 19 # params["board_size"]
         self.num_future_actions = 362 # params["num_future_actions"]
         self.num_planes = 18 # params["num_planes"]
-        # print("#future_action: " + str(self.num_future_actions))
-        # print("#num_planes: " + str(self.num_planes))
 
         # Network structure of AlphaGo Zero
         # https://www.nature.com/nature/journal/v550/n7676/full/nature24270.html
@@ -152,46 +92,6 @@ class Model_PolicyValue(Model):
         self.tanh = nn.Tanh()
         self.resnet = GoResNet(option_map, params)
 
-        # if self.options.use_data_parallel:
-        #     self.resnet = nn.DataParallel(
-        #         self.resnet, output_device=self.options.gpu)
-        # self._check_and_init_distributed_model()
-
-    """def _check_and_init_distributed_model(self):
-        if not self.options.use_data_parallel_distributed:
-            return
-
-        if not dist.is_initialized():
-            world_size = self.options.dist_world_size
-            url = self.options.dist_url
-            rank = self.options.dist_rank
-            # This is for SLURM's special use case
-            if rank == -1:
-                rank = int(os.environ.get("SLURM_NODEID"))
-
-            print("=> Distributed training: world size: {}, rank: {}, URL: {}".
-                  format(world_size, rank, url))
-
-            dist.init_process_group(backend="nccl",
-                                    init_method=url,
-                                    rank=rank,
-                                    world_size=world_size)
-
-        # Initialize the distributed data parallel model
-        master_gpu = self.options.gpu
-        if master_gpu is None or master_gpu < 0:
-            raise RuntimeError("Distributed training requires "
-                               "to put the model on the GPU, but the GPU is "
-                               "not given in the argument")
-        # This is needed for distributed model since the distributed model
-        # initialization will require the model be on the GPU, even though
-        # the later code will put the same model on the GPU again with
-        # self.options.gpu, so this should be ok
-        self.resnet.cuda(master_gpu)
-        self.resnet = nn.parallel.DistributedDataParallel(
-            self.resnet,
-            output_device=master_gpu)
-    """
     def _conv_layer(
             self,
             input_channel=None,
@@ -218,17 +118,6 @@ class Model_PolicyValue(Model):
 
         return nn.Sequential(*layers)
 
-    """def prepare_cooldown(self):
-        try:
-            for module in self.modules():
-                if module.__class__.__name__.startswith('BatchNorm'):
-                    module.reset_running_stats()
-        except Exception as e:
-            print(e)
-            print("The module doesn't have method 'reset_running_stats', "
-                  "skipping. Please set bn_momentum to 0.1"
-                  "(for cooldown = 50) in this case")
-    """
     def forward(self, x):
         s = self._var(x)
         # print(type(s), s.volatile)
@@ -251,10 +140,3 @@ class Model_PolicyValue(Model):
         V = self.tanh(V)
 
         return dict(logpi=logpi, pi=pi, V=V)
-
-
-# Format: key, [model, method]
-# Models = {
-#    "df_pred": [Model_PolicyValue, MultiplePrediction],
-#    "df_kl": [Model_PolicyValue, MCTSPrediction]
-#}

@@ -42,20 +42,13 @@ class DualNetwork():
         processed = np.concatenate(processed, axis=0).astype(np.float32)
         if len(processed.shape) == 3:
             processed = np.expand_dims(processed, 0)
-        # processed = processed.transpose((0, 3, 1, 2)).astype(np.float32)
-        # print(processed.shape, processed.dtype)
 
-        # print(input_.shape, input_.dtype)
-        # run the neural nerwork
-        # batch = {"s": torch.from_numpy(processed)}
         batch = torch.from_numpy(processed)
         if self.cuda:
             batch = batch.cuda()
-        # print(batch["s"].shape)
         outputs = self.model(batch)
         probabilities, value = outputs['pi'], outputs['V']
-        # print(probabilities)
-        # print(value)
+
         if self.cuda:
           probabilities = probabilities.cpu()
           value = value.cpu()
@@ -74,13 +67,11 @@ class DualNetwork():
 if __name__ == "__main__":
     input_ = np.zeros((1, 18, 19, 19)).astype(np.float32)
     input_[:, 16, :, :] = 1.
-    # batch = {"s": torch.from_numpy(input_)}
     # batch = torch.from_numpy(input_)
 
     fn = "/private/home/zhuoyuan/AlphaGo/ELF2_models/save-1661000.bin"
     # fn = "/Users/zhuoyuan/Exp/AlphaGo/ELF2_models/save-1661000.bin"
     model = DualNetwork(fn)
-    # model.model = model.model.cuda()
 
     # to run directly
     # res = model.model(batch)
