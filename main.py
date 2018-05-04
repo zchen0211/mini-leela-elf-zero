@@ -28,8 +28,6 @@ from absl import flags
 from tqdm import tqdm
 import gzip
 import numpy as np
-# import tensorflow as tf
-# from tensorflow import gfile
 
 import go
 # import dual_net
