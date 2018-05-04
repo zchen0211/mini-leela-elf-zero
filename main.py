@@ -24,17 +24,17 @@ import sys
 import tempfile
 import time
 from absl import flags
-import cloud_logging
+# import cloud_logging
 from tqdm import tqdm
 import gzip
 import numpy as np
-import tensorflow as tf
-from tensorflow import gfile
+# import tensorflow as tf
+# from tensorflow import gfile
 
 import go
-import dual_net
+# import dual_net
 from gtp_wrapper import make_gtp_instance, MCTSPlayer
-import preprocessing
+# import preprocessing
 import selfplay_mcts
 from utils import logged_timer as timer
 import evaluation
@@ -280,7 +280,7 @@ argh.add_commands(parser, [gtp, bootstrap, train, freeze_graph,
                            selfplay, gather, evaluate, validate, convert])
 
 if __name__ == '__main__':
-    cloud_logging.configure()
+    # cloud_logging.configure()
     # Let absl.flags parse known flags from argv, then pass the remaining flags
     # into argh for dispatching.
     remaining_argv = flags.FLAGS(sys.argv, known_only=True)

@@ -132,9 +132,9 @@ class Model(nn.Module):
 
             keys = list(sd.keys())
             for key in keys:
-                if key.endswith("num_batches_tracked"):
-                    del sd[key]
-                    continue
+                # if key.endswith("num_batches_tracked"):
+                    # del sd[key]
+                    # continue
                 for src, dst in replace_prefix:
                     if key.startswith(src):
                         sd[dst + key[len(src):]] = sd[key]
